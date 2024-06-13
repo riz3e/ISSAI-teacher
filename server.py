@@ -1,8 +1,5 @@
 import socket
-import threading
-import openai
 
-openai.api_key = ""
 
 def initialize_server(ip, port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,17 +37,6 @@ def send_message(client, msg):
 def get_user_request():
     return str(input("Enter command: "))
 
-def get_response(msg):
-    model = "gpt-3.5-turbo"
-    prompt = msg
-
-    response = openai.Completion.create(
-        model=model,
-        prompt=prompt,
-        max_tokens=100  # Adjust the number of tokens based on your needs
-    )
-
-    return response.choices[0].text.strip()
 
 if __name__ == "__main__":
     server = initialize_server("127.0.0.1", 6666)

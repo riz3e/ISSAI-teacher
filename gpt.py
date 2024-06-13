@@ -9,7 +9,10 @@ client = OpenAI(
     api_key=os.getenv('OPENAI_API_KEY')
 )
 
-def convo(msg: str ="", ):
+
+def get_response(msg: str = "", ):
+    model = "gpt-3.5-turbo"
+
     chat_completion = client.chat.completions.create(
         messages=[
             {
@@ -17,9 +20,13 @@ def convo(msg: str ="", ):
                 "content": msg,
             }
         ],
-        model="gpt-3.5-turbo",
+        model=model,
     )
+
+    response_dict = chat_completion.to_dict()
+    return response_dict['choices'][0]['message']['content'],
 
 
 if __name__ == "__main__":
-    convo(input("Your prompt: "))
+    answer = get_response(input("Your prompt: "))
+    print(answer)
