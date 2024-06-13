@@ -22,8 +22,8 @@ import os
 from openai import OpenAI
 
 client = OpenAI(
-    # This is the default and can be omitted
-    api_key="YOUR_GPT_API_KEY"
+    # This is the default and can be comitted
+    api_key=os.getenv('OPENAI_API_KEY')
 )
 
 msg = str(input("Enter Prompt: "))
