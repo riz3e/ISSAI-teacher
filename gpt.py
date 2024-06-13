@@ -9,16 +9,17 @@ client = OpenAI(
     api_key=os.getenv('OPENAI_API_KEY')
 )
 
-msg = str(input("Enter Prompt: "))
+def convo(msg: str ="", ):
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": msg,
+            }
+        ],
+        model="gpt-3.5-turbo",
+    )
 
-chat_completion = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
-            "content": msg,
-        }
-    ],
-    model="gpt-3.5-turbo",
-)
 
-print(chat_completion.choices[0].message.content)
+if __name__ == "__main__":
+    convo(input("Your prompt: "))
