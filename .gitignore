@@ -1,2 +1,6 @@
 .env
 venv
+vosk
+piper
+web/STT/venv
+web/STT/back/__pycache__
