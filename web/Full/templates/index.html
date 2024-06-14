@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription and Text to Speech</title>
+</head>
+<body>
+    <h1>Audio Transcription</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="audio-file">Upload Audio File:</label>
+        <input type="file" id="audio-file" name="audio-file" accept="audio/*" required>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="transcription"></div>
+
+    <h1>Text to Speech</h1>
+    <textarea id="text-input" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
+    <button onclick="generateAudio()">Generate Audio</button><br>
+    <audio id="audio-output" controls></audio><br>
+    <a id="download-link" download="audio.wav" style="display: none;"><button>Download Audio</button></a>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileField = document.querySelector('input[type="file"]');
+
+            formData.append('audio-file', fileField.files[0]);
+
+            const response = await fetch('/transcribe', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            document.getElementById('transcription').innerText = result.transcription;
+        });
+
+        async function generateAudio() {
+            const text = document.getElementById('text-input').value;
+            const formData = new FormData();
+            formData.append('text', text);
+
+            const response = await fetch('/generate_audio', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioElement = document.getElementById('audio-output');
+                audioElement.src = audioUrl;
+                audioElement.play();
+
+                const downloadLink = document.getElementById('download-link');
+                downloadLink.href = audioUrl;
+                downloadLink.style.display = 'block';
+            } else {
+                console.error('Failed to generate audio');
+            }
+        }
+    </script>
+</body>
+</html>
