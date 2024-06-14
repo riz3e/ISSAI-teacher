@@ -4,3 +4,5 @@ vosk
 piper
 web/STT/venv
 web/STT/back/__pycache__
+web/STT/vosk-model-kz-0.15
+web/TTS/neuro
