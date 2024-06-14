@@ -17,7 +17,7 @@ def create_client():
 
 def get_gpt_response(conversation_history: list, client):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=GPT_MODEL,
         messages=conversation_history
     )
     # print(response)
