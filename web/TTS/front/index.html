@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text-to-Speech</title>
+  </head>
+  <body>
+    <h1>Text-to-Speech</h1>
+    <form id="synthesizeForm">
+      <label for="textInput">Enter text:</label><br />
+      <textarea id="textInput" name="text" rows="4" cols="50"></textarea><br />
+      <button type="submit">Submit</button>
+    </form>
+    <audio id="audioPlayer" controls style="display: none"></audio>
+
+    <script>
+      document
+        .getElementById("synthesizeForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const text = document.getElementById("textInput").value;
+
+          try {
+            const response = await fetch("http://localhost:8000/synthesize", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({ text }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to synthesize audio.");
+            }
+
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            document.getElementById("audioPlayer").src = audioUrl;
+            document.getElementById("audioPlayer").style.display = "block";
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Error synthesizing audio.");
+          }
+        });
+    </script>
+  </body>
+</html>

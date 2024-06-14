@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech-to-Text</title>
+  </head>
+  <body>
+    <h1>Speech-to-Text</h1>
+
+    <h2>Record Audio</h2>
+    <button id="startRecordBtn" onclick="startRecording()">
+      Start Recording
+    </button>
+    <button id="stopRecordBtn" onclick="stopRecording()" disabled>
+      Stop Recording
+    </button>
+    <audio id="audioPlayer" controls style="display: none"></audio>
+
+    <h2>Upload Audio File</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input
+        type="text"
+        id="userIdInput"
+        name="user_id"
+        placeholder="Enter your user ID"
+      />
+      <input type="file" id="fileInput" name="file" accept=".mp3" />
+      <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+    <p id="transcription"></p>
+
+    <script>
+      let mediaRecorder;
+      let chunks = [];
+
+      function startRecording() {
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then(function (stream) {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            document.getElementById("startRecordBtn").disabled = true;
+            document.getElementById("stopRecordBtn").disabled = false;
+
+            mediaRecorder.ondataavailable = function (event) {
+              chunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = function () {
+              const blob = new Blob(chunks, { type: "audio/webm" });
+              const audioUrl = URL.createObjectURL(blob);
+              document.getElementById("audioPlayer").src = audioUrl;
+            };
+          })
+          .catch(function (error) {
+            console.error("Error accessing media devices:", error);
+          });
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+          document.getElementById("startRecordBtn").disabled = false;
+          document.getElementById("stopRecordBtn").disabled = true;
+        }
+      }
+
+      async function uploadFile() {
+        const form = document.getElementById("uploadForm");
+        const formData = new FormData(form);
+        const userId = document.getElementById("userIdInput").value;
+
+        try {
+          const response = await fetch(
+            `http://localhost:8000/upload/${userId}`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById("transcription").innerText =
+              "Transcription: " + data.transcription;
+          } else {
+            alert("Failed to upload file.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Error uploading file.");
+        }
+      }
+    </script>
+  </body>
+</html>
