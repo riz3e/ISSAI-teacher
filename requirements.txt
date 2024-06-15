@@ -1,4 +1,7 @@
-openai>=1.34.0
-python-dotenv>=1.0.1
-fastapi>=0.111.0
-vosk>=0.3.45 
+openai
+python-dotenv
+fastapi
+flask
+vosk
+soundfile
+pydub

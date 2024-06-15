@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text-to-Speech and Speech-to-Text</title>
+  </head>
+  <body>
+    <h1>Text-to-Speech and Speech-to-Text</h1>
+
+    <h2>Text to Speech</h2>
+    <form id="text-to-speech-form">
+      <textarea
+        name="text"
+        id="text-input"
+        rows="4"
+        cols="50"
+        placeholder="Enter text here..."
+      ></textarea
+      ><br />
+      <button type="submit">Convert to Speech</button>
+    </form>
+    <a id="download-link" style="display: none">Download Audio</a>
+
+    <h2>Speech to Text</h2>
+    <form id="speech-to-text-form" enctype="multipart/form-data">
+      <input type="file" name="file" id="audio-file" accept="audio/*" /><br />
+      <button type="submit">Convert to Text</button>
+    </form>
+    <p id="transcription-result"></p>
+
+    <script src="/static/scripts.js"></script>
+  </body>
+</html>
