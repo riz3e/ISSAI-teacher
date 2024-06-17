@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Audio Transcription</h1>
-    <form id="upload-form" enctype="multipart/form-data">
+    <form id="upload-form" enctype="multipart/form-data" action="http://localhost:8000/stt/transcribe/">
         <label for="audio-file">Upload Audio File:</label>
         <input type="file" id="audio-file" name="audio-file" accept="audio/*" required>
         <button type="submit">Submit</button>
@@ -22,8 +22,10 @@
     <audio id="recorded-audio" controls></audio>
 
     <h1>Text to Speech</h1>
-    <textarea id="text-input" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
-    <button onclick="generateAudio()">Generate Audio</button><br>
+    <form id="tts-form">
+        <textarea id="text-input" name="text" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
+        <button type="submit">Generate Audio</button><br>
+    </form>
     <audio id="audio-output" controls></audio><br>
     <a id="download-link" download="audio.wav" style="display: none;"><button>Download Audio</button></a>
 
@@ -35,7 +37,7 @@
 
             formData.append('audio-file', fileField.files[0]);
 
-            const response = await fetch('/transcribe', {
+            const response = await fetch('http://localhost:8000/stt/transcribe/', {
                 method: 'POST',
                 body: formData
             });
@@ -44,12 +46,11 @@
             document.getElementById('transcription').innerText = result.transcription;
         });
 
-        async function generateAudio() {
-            const text = document.getElementById('text-input').value;
-            const formData = new FormData();
-            formData.append('text', text);
-
-            const response = await fetch('/generate_audio', {
+        document.getElementById('tts-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('tts-form'));
+            
+            const response = await fetch('http://localhost:8000/tts/generate_audio/', {
                 method: 'POST',
                 body: formData
             });
@@ -67,7 +68,7 @@
             } else {
                 console.error('Failed to generate audio');
             }
-        }
+        });
 
         async function getMicrophones() {
             // Request microphone access to populate device labels
@@ -101,12 +102,22 @@
                 audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
             });
 
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            source.connect(analyser);
+
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
             audioChunks = [];
 
             mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                    console.log('Data available:', event.data);
+                } else {
+                    console.warn('No audio data available');
+                }
             };
 
             mediaRecorder.onstop = async () => {
@@ -117,9 +128,9 @@
                 audioElement.play();
 
                 const formData = new FormData();
-                formData.append('audio-file', audioBlob, 'recorded_audio.wav');
+                formData.append('audio-file', audioBlob);
 
-                const response = await fetch('/transcribe', {
+                const response = await fetch('http://localhost:8000/stt/transcribe/', {
                     method: 'POST',
                     body: formData
                 });
