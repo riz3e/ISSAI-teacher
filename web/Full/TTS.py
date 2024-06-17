@@ -1,30 +1,34 @@
-# tts_service.py
-import os
-from flask import Flask, request, send_file
-import torch
-from transformers import VitsModel, AutoTokenizer
-import scipy.io.wavfile
 import io
+import torch
+import scipy.io.wavfile
+from transformers import VitsModel, AutoTokenizer
+from fastapi import FastAPI, Form, HTTPException
 
-app = Flask(__name__)
+app = FastAPI()
 
+# Load the text-to-speech model and tokenizer
 tts_model = VitsModel.from_pretrained("facebook/mms-tts-kaz")
 tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-kaz")
 
-@app.route('/generate_audio', methods=['POST'])
-def generate_audio():
-    text = request.form['text']
-    inputs = tokenizer(text, return_tensors="pt")
+@app.post("/generate_audio")
+async def generate_audio(text: str = Form(...)):
+    try:
+        inputs = tokenizer(text, return_tensors="pt")
 
-    with torch.no_grad():
-        output = tts_model(**inputs).waveform
+        with torch.no_grad():
+            output = tts_model(**inputs).waveform
 
-    sample_rate = tts_model.config.sampling_rate
-    buffer = io.BytesIO()
-    scipy.io.wavfile.write(buffer, rate=sample_rate, data=output.squeeze().numpy())
-    buffer.seek(0)
+        # Prepare the audio file for download
+        sample_rate = tts_model.config.sampling_rate
+        buffer = io.BytesIO()
+        scipy.io.wavfile.write(buffer, rate=sample_rate, data=output.squeeze().numpy())
+        buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name='output.wav', mimetype='audio/wav')
+        return {"audio": buffer}
 
-if __name__ == '__main__':
-    app.run(port=5002)  # Choose a different port from the transcription service
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error during audio generation: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5002)
