@@ -13,6 +13,13 @@
         <button type="submit">Submit</button>
     </form>
     <div id="transcription"></div>
+    
+    <h2>Record Audio</h2>
+    <label for="mic-select">Choose Microphone:</label>
+    <select id="mic-select"></select>
+    <button id="record-button">Record</button>
+    <button id="stop-button" disabled>Stop</button>
+    <audio id="recorded-audio" controls></audio>
 
     <h1>Text to Speech</h1>
     <textarea id="text-input" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
@@ -61,6 +68,78 @@
                 console.error('Failed to generate audio');
             }
         }
+
+        async function getMicrophones() {
+            // Request microphone access to populate device labels
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                return;
+            }
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+
+            const micSelect = document.getElementById('mic-select');
+            micSelect.innerHTML = ''; // Clear existing options
+
+            audioInputDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Microphone ${micSelect.length + 1}`;
+                micSelect.appendChild(option);
+            });
+        }
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('record-button').addEventListener('click', async () => {
+            const selectedMic = document.getElementById('mic-select').value;
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
+            });
+
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioElement = document.getElementById('recorded-audio');
+                audioElement.src = audioUrl;
+                audioElement.play();
+
+                const formData = new FormData();
+                formData.append('audio-file', audioBlob, 'recorded_audio.wav');
+
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                document.getElementById('transcription').innerText = result.transcription;
+            };
+
+            document.getElementById('record-button').disabled = true;
+            document.getElementById('stop-button').disabled = false;
+        });
+
+        document.getElementById('stop-button').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('record-button').disabled = false;
+            document.getElementById('stop-button').disabled = true;
+        });
+
+        // Populate the microphone list on page load
+        getMicrophones();
     </script>
 </body>
 </html>

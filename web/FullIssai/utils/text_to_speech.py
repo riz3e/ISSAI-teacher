@@ -1,6 +1,6 @@
 import os
 from functools import partial
-
+#how tf this should work
 from piper import Piper, tts  # Import required classes from piper
 
 def generate_speech(text, model_path="./piper/voice-kk-issai-high/kk-issai-high.onnx", speaker_id=4):
