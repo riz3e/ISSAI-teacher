@@ -7,13 +7,13 @@
 </head>
 <body>
     <h1>Audio Transcription</h1>
-    <form id="upload-form" enctype="multipart/form-data" action="http://localhost:8000/stt/transcribe/">
+    <form id="upload-form" enctype="multipart/form-data">
         <label for="audio-file">Upload Audio File:</label>
         <input type="file" id="audio-file" name="audio-file" accept="audio/*" required>
         <button type="submit">Submit</button>
     </form>
     <div id="transcription"></div>
-    
+
     <h2>Record Audio</h2>
     <label for="mic-select">Choose Microphone:</label>
     <select id="mic-select"></select>
@@ -22,10 +22,8 @@
     <audio id="recorded-audio" controls></audio>
 
     <h1>Text to Speech</h1>
-    <form id="tts-form">
-        <textarea id="text-input" name="text" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
-        <button type="submit">Generate Audio</button><br>
-    </form>
+    <textarea id="text-input" rows="4" cols="50" placeholder="Enter text here..."></textarea><br>
+    <button onclick="generateAudio()">Generate Audio</button><br>
     <audio id="audio-output" controls></audio><br>
     <a id="download-link" download="audio.wav" style="display: none;"><button>Download Audio</button></a>
 
@@ -34,28 +32,41 @@
             event.preventDefault();
             const formData = new FormData();
             const fileField = document.querySelector('input[type="file"]');
-
             formData.append('audio-file', fileField.files[0]);
 
-            const response = await fetch('http://localhost:8000/stt/transcribe/', {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const result = await response.json();
-            document.getElementById('transcription').innerText = result.transcription;
+                if (!response.ok) {
+                    throw new Error('Failed to transcribe audio');
+                }
+
+                const result = await response.json();
+                document.getElementById('transcription').innerText = result.transcription;
+            } catch (error) {
+                console.error('Error transcribing audio:', error);
+                alert('Error transcribing audio');
+            }
         });
 
-        document.getElementById('tts-form').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const formData = new FormData(document.getElementById('tts-form'));
-            
-            const response = await fetch('http://localhost:8000/tts/generate_audio/', {
-                method: 'POST',
-                body: formData
-            });
+        async function generateAudio() {
+            const text = document.getElementById('text-input').value;
+            const formData = new FormData();
+            formData.append('text', text);
 
-            if (response.ok) {
+            try {
+                const response = await fetch('/generate_audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate audio');
+                }
+
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audioElement = document.getElementById('audio-output');
@@ -65,10 +76,11 @@
                 const downloadLink = document.getElementById('download-link');
                 downloadLink.href = audioUrl;
                 downloadLink.style.display = 'block';
-            } else {
-                console.error('Failed to generate audio');
+            } catch (error) {
+                console.error('Error generating audio:', error);
+                alert('Error generating audio');
             }
-        });
+        }
 
         async function getMicrophones() {
             // Request microphone access to populate device labels
@@ -98,26 +110,16 @@
 
         document.getElementById('record-button').addEventListener('click', async () => {
             const selectedMic = document.getElementById('mic-select').value;
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
             });
-
-            const audioContext = new AudioContext();
-            const source = audioContext.createMediaStreamSource(stream);
-            const analyser = audioContext.createAnalyser();
-            source.connect(analyser);
 
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
             audioChunks = [];
 
             mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data);
-                    console.log('Data available:', event.data);
-                } else {
-                    console.warn('No audio data available');
-                }
+                audioChunks.push(event.data);
             };
 
             mediaRecorder.onstop = async () => {
@@ -128,15 +130,24 @@
                 audioElement.play();
 
                 const formData = new FormData();
-                formData.append('audio-file', audioBlob);
+                formData.append('audio-file', audioBlob, 'recorded_audio.wav');
 
-                const response = await fetch('http://localhost:8000/stt/transcribe/', {
-                    method: 'POST',
-                    body: formData
-                });
+                try {
+                    const response = await fetch('/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const result = await response.json();
-                document.getElementById('transcription').innerText = result.transcription;
+                    if (!response.ok) {
+                        throw new Error('Failed to transcribe audio');
+                    }
+
+                    const result = await response.json();
+                    document.getElementById('transcription').innerText = result.transcription;
+                } catch (error) {
+                    console.error('Error transcribing recorded audio:', error);
+                    alert('Error transcribing recorded audio');
+                }
             };
 
             document.getElementById('record-button').disabled = true;
