@@ -161,6 +161,37 @@
         });
 
         // Populate the microphone list on page load
+
+        document.getElementById('summarize-button').addEventListener('click', async () => {
+            const transcription = document.getElementById('transcription').innerText;
+            if (!transcription) {
+                alert('No transcription available to summarize');
+                return;
+            }
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: transcription })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    console.log('Summary:', data.summary);
+                    document.getElementById('summary').innerText = data.summary;
+                } else {
+                    console.error('Error:', data.error);
+                    alert('Error summarizing transcription');
+                }
+            } catch (error) {
+                console.error('Error summarizing transcription:', error);
+                alert('Error summarizing transcription');
+            }
+        });
+        
         getMicrophones();
     </script>
 </body>
