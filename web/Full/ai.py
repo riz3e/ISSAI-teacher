@@ -1,13 +1,14 @@
 from fastapi import FastAPI, Form, HTTPException
 import google.generativeai as genai
 import logging
+import os
+from dotenv import load_dotenv
 
 app = FastAPI()
 logging.basicConfig(level=logging.DEBUG)
 
-
-API_KEY = ""
-genai.configure(api_key=API_KEY)
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Create the model
 # See https://ai.google.dev/api/python/google/generativeai/GenerativeModel
@@ -28,35 +29,27 @@ chat_session = model.start_chat(
   history=[
   ]
 )
+# Define the translation mappings
+translation_mapping = {
+    'А': 'A', 'а': 'a', 'Ә': 'Ă', 'ә': 'ă', 'Б': 'B', 'б': 'b', 'В': 'V', 'в': 'v',
+    'Г': 'G', 'г': 'g', 'Ғ': 'Gh', 'ғ': 'gh', 'Д': 'D', 'д': 'd', 'Е': 'E', 'е': 'e',
+    'Ё': 'Ë', 'ё': 'ë', 'Ж': 'Zh', 'ж': 'zh', 'З': 'Z', 'з': 'z', 'И': 'I', 'и': 'i',
+    'Й': 'Y', 'й': 'y', 'К': 'K', 'к': 'k', 'Қ': 'Q', 'қ': 'q', 'Л': 'L', 'л': 'l',
+    'М': 'M', 'м': 'm', 'Н': 'N', 'н': 'n', 'Ң': 'N͡g', 'ң': 'n͡g', 'О': 'O', 'о': 'o',
+    'Ө': 'Ȯ', 'ө': 'ȯ', 'П': 'P', 'п': 'p', 'Р': 'R', 'р': 'r', 'С': 'S', 'с': 's',
+    'Т': 'T', 'т': 't', 'У': 'U', 'у': 'u', 'Ұ': 'Ū', 'ұ': 'ū', 'Ү': 'U̇', 'ү': 'u̇',
+    'Ф': 'F', 'ф': 'f', 'Х': 'Kh', 'х': 'kh', 'Һ': 'Ḣ', 'һ': 'ḣ', 'Ц': 'T͡s', 'ц': 't͡s',
+    'Ч': 'Ch', 'ч': 'ch', 'Ш': 'Sh', 'ш': 'sh', 'Щ': 'Shch', 'щ': 'shch', 'Ъ': 'ʺ', 'ъ': 'ʺ',
+    'Ы': 'Y', 'ы': 'y', 'І': 'Ī', 'і': 'ī', 'Ь': 'ʹ', 'ь': 'ʹ', 'Э': 'Ė', 'э': 'ė',
+    'Ю': 'I͡u', 'ю': 'i͡u', 'Я': 'I͡a', 'я': 'i͡a'
+}
 
-def cyrillic_to_latin(text):
-  """
-  This function translates Cyrillic Kazakh characters to their Latin equivalents.
+def translate_to_iso(text):
+    translated_text = ''
+    for char in text:
+        translated_text += translation_mapping.get(char, char)
+    return translated_text
 
-  **Note:** This script uses a basic mapping and might not cover all edge cases.
-
-  Args:
-      text: The text in Cyrillic Kazakh.
-
-  Returns:
-      The text in Latin Kazakh (if possible).
-  """
-  mapping = {
-      "А": "A", "ә": "a", "Б": "B", "В": "V", "Г": "G", "Ғ": "Ğ",
-      "Д": "D", "Е": "E", "Ё": "ÍO", "Ж": "J", "З": "Z", "И": "İ",
-      "Й": "İ", "К": "K", "Қ": "Q", "Л": "L", "М": "M", "Н": "N",
-      "Ң": "Ñ", "О": "O", "Ө": "Ö", "П": "P", "Р": "R", "С": "S",
-      "Т": "T", "У": "U", "Ұ": "Ū", "Ү": "Ū", "Ф": "F", "Х": "H",
-      "Һ": "Ḥ", "Ц": "Ts", "Ч": "Ş", "Ш": "Ş", "Щ": "Sc", "Ъ": "",
-      "Ы": "Y", "І": "I", "Э": "E", "Ю": "IU", "Я": "Yа"
-  }
-  latin_text = ""
-  for char in text:
-    if char in mapping:
-      latin_text += mapping[char]
-    else:
-      latin_text += char  # Keep characters not in the mapping
-  return latin_text
 
 
 
@@ -68,7 +61,7 @@ async def summarize(text: str = Form(...)):
         if not text:
             raise HTTPException(status_code=400, detail="No text provided for summarization")
         
-        translated_text = cyrillic_to_latin(text)
+        translated_text = translate_to_iso(text)
         logging.debug(f"Translated text: {translated_text}")
 
         response = chat_session.send_message(translated_text)

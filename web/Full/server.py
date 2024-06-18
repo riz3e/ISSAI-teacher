@@ -1,5 +1,7 @@
 import subprocess
 import time
+import sys
+import os
 
 # Define the command to run each service
 services = {
@@ -16,8 +18,15 @@ try:
     # Start each service in the background
     for service, command in services.items():
         print(f"Starting {service}...")
-        process = subprocess.Popen(command)
+        
+        # Create log files for each service
+        stdout_log = open(f"{service}_stdout.log", "w")
+        stderr_log = open(f"{service}_stderr.log", "w")
+        
+        # Start the process and redirect stdout and stderr to log files
+        process = subprocess.Popen(command, stdout=stdout_log, stderr=stderr_log)
         processes.append(process)
+        
         time.sleep(1)  # Small delay to avoid race conditions on startup
     print("All services have been started.")
 
@@ -34,3 +43,8 @@ except KeyboardInterrupt:
         process.wait()
 
     print("All services have been stopped.")
+
+    # Close log files
+    for service in services.keys():
+        stdout_log.close()
+        stderr_log.close()

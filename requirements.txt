@@ -2,6 +2,8 @@ openai
 python-dotenv
 fastapi
 flask
-vosk
 soundfile
-pydub
+google-generativeai
+torch
+torchaudio
+transformers

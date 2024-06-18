@@ -86,6 +86,7 @@
         }
 
         async function getMicrophones() {
+            // Request microphone access to populate device labels
             try {
                 await navigator.mediaDevices.getUserMedia({ audio: true });
             } catch (err) {
@@ -97,7 +98,7 @@
             const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
 
             const micSelect = document.getElementById('mic-select');
-            micSelect.innerHTML = '';
+            micSelect.innerHTML = ''; // Clear existing options
 
             audioInputDevices.forEach(device => {
                 const option = document.createElement('option');
@@ -111,56 +112,47 @@
         let audioChunks = [];
 
         document.getElementById('record-button').addEventListener('click', async () => {
-            const selectedMic = document.getElementById('mic-select').value;
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
-                });
+    const selectedMic = document.getElementById('mic-select').value; // Fixed typo
+    if (!selectedMic) {
+        alert('Please select a microphone first!');
+        return;
+    }
+    
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
+    });
 
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-                mediaRecorder.start();
-                audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
+    audioChunks = [];
 
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
+    mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+    };
 
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const audioElement = document.getElementById('recorded-audio');
-                    audioElement.src = audioUrl;
-                    audioElement.play();
+    mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioElement = document.getElementById('recorded-audio');
+        audioElement.src = audioUrl;
+        audioElement.play();
 
-                    const formData = new FormData();
-                    formData.append('audio-file', audioBlob, 'recorded_audio.webm');
+        const formData = new FormData();
+        formData.append('audio-file', audioBlob, 'recorded_audio.wav');
 
-                    try {
-                        const response = await fetch('/transcribe', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to transcribe audio');
-                        }
-
-                        const result = await response.json();
-                        document.getElementById('transcription').innerText = result.transcription;
-                        document.getElementById('summarize-button').style.display = 'block';
-                    } catch (error) {
-                        console.error('Error transcribing recorded audio:', error);
-                        alert('Error transcribing recorded audio');
-                    }
-                };
-
-                document.getElementById('record-button').disabled = true;
-                document.getElementById('stop-button').disabled = false;
-            } catch (error) {
-                console.error('Error starting recording:', error);
-                alert('Error starting recording');
-            }
+        const response = await fetch('/transcribe', {
+            method: 'POST',
+            body: formData
         });
+
+        const result = await response.json();
+        document.getElementById('transcription').innerText = result.transcription;
+    };
+
+    document.getElementById('record-button').disabled = true;
+    document.getElementById('stop-button').disabled = false;
+});
+
 
         document.getElementById('stop-button').addEventListener('click', () => {
             mediaRecorder.stop();
@@ -168,36 +160,7 @@
             document.getElementById('stop-button').disabled = true;
         });
 
-        document.getElementById('summarize-button').addEventListener('click', async () => {
-            const transcription = document.getElementById('transcription').innerText;
-            if (!transcription) {
-                alert('No transcription available to summarize');
-                return;
-            }
-
-            try {
-                const response = await fetch('/summarize', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ text: transcription })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    console.log('Summary:', data.summary);
-                    document.getElementById('summary').innerText = data.summary;
-                } else {
-                    console.error('Error:', data.error);
-                    alert('Error summarizing transcription');
-                }
-            } catch (error) {
-                console.error('Error summarizing transcription:', error);
-                alert('Error summarizing transcription');
-            }
-        });
-
+        // Populate the microphone list on page load
         getMicrophones();
     </script>
 </body>
