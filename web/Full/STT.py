@@ -5,6 +5,7 @@ import torch
 import torchaudio
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -12,9 +13,17 @@ app = FastAPI()
 processor = Wav2Vec2Processor.from_pretrained("aismlv/wav2vec2-large-xlsr-kazakh")
 model = Wav2Vec2ForCTC.from_pretrained("aismlv/wav2vec2-large-xlsr-kazakh")
 
-@app.post("/transcribe")
+
+class TranscriptionResult(BaseModel):
+    transcription: str
+
+@app.post("/transcribe", response_model=TranscriptionResult)
 async def transcribe_audio(file: UploadFile = File(...)):
+    logging.info(f"Received file: {file.filename}")
     try:
+        # Create the uploads directory if it doesn't exist
+        os.makedirs("uploads", exist_ok=True)
+
         # Save the uploaded file temporarily
         file_path = os.path.join("uploads", file.filename)
         with open(file_path, "wb") as audio_file:
@@ -45,6 +54,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     finally:
         os.remove(file_path)  # Clean up the temporary file
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -3,6 +3,7 @@ import torch
 import scipy.io.wavfile
 from transformers import VitsModel, AutoTokenizer
 from fastapi import FastAPI, Form, HTTPException
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
@@ -24,7 +25,7 @@ async def generate_audio(text: str = Form(...)):
         scipy.io.wavfile.write(buffer, rate=sample_rate, data=output.squeeze().numpy())
         buffer.seek(0)
 
-        return {"audio": buffer}
+        return StreamingResponse(buffer, media_type="audio/wav", headers={"Content-Disposition": "attachment; filename=output.wav"})
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during audio generation: {str(e)}")

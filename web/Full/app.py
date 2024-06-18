@@ -12,13 +12,9 @@ TRANSCRIBE_SERVICE_URL = "http://localhost:5001/transcribe"
 TTS_SERVICE_URL = "http://localhost:5002/generate_audio"
 SUMMARY_API_URL = "http://localhost:5003/summarize"
 
-# Placeholder for your existing code (e.g., user interface logic)
-# ...
-
 @app.route('/')
 def index():
     return render_template('index.html')  # Render the HTML template
-
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
@@ -31,9 +27,14 @@ def transcribe():
 
     try:
         # Forward the request to the transcribe microservice
-        files = {'audio-file': (file.filename, file.stream, file.content_type)}
+        files = {'file': (file.filename, file.stream, file.content_type)}
         response = requests.post(TRANSCRIBE_SERVICE_URL, files=files)
-        transcription = response.json()['transcription']
+        response.raise_for_status()
+        transcription = response.json().get('transcription', '')
+    except requests.RequestException as e:
+        return jsonify({'error': f'Error during request to transcription service: {str(e)}'}), 500
+    except KeyError:
+        return jsonify({'error': 'Invalid response from transcription service'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -51,9 +52,12 @@ def summarize():
         return jsonify({'error': 'Missing "text" field in request body'}), 400
 
     text = data["text"]
+    print(f"text: {text}")
 
     try:
-        summary = requests.post(SUMMARY_API_URL, json={'text': text}).json()['text']
+        summary = requests.post(SUMMARY_API_URL, data={'text': text})
+        print(f"summ: {summary}")
+
         return jsonify({'summary': summary})
     except Exception as e:
         print(f"Error summarizing text: {e}")
@@ -67,12 +71,14 @@ def generate_audio():
     try:
         # Forward the request to the text-to-speech microservice
         response = requests.post(TTS_SERVICE_URL, data={'text': text})
+        response.raise_for_status()
         audio_data = response.content
+    except requests.RequestException as e:
+        return jsonify({'error': f'Error during request to TTS service: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
     return send_file(io.BytesIO(audio_data), as_attachment=True, download_name='output.wav', mimetype='audio/wav')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
