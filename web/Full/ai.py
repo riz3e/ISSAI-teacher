@@ -6,7 +6,7 @@ app = FastAPI()
 logging.basicConfig(level=logging.DEBUG)
 
 
-API_KEY = "AIzaSyAgBt0ro1rQQsKCjcMm1lmjJVAIT4B_ecM"
+API_KEY = ""
 genai.configure(api_key=API_KEY)
 
 # Create the model
