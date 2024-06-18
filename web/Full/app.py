@@ -54,15 +54,16 @@ def summarize():
         response.raise_for_status()
         response_data = response.json()
         summary_text = response_data.get("text")
-
-        print(summary_text)
+        summary_text2 = response_data.get("summary")
+        print(response_data)
+        print(summary_text, summary_text2)
        
     except requests.RequestException as e:
         return jsonify({'error': f'Error during request to Summary service: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    return jsonify({'summary': summary_text})
+    return jsonify({'summary': summary_text2})
 
 
 @app.route('/generate_audio', methods=['POST'])

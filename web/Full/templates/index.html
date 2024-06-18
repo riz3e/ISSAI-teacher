@@ -177,28 +177,21 @@
 
             try {
                 const response = await fetch('/summarize', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ text: transcription })
-});
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: transcription })
+                });
 
-const data = await response.json();
-if (response.ok) {
-    console.log('Summary:', data.summary);
-} else {
-    console.error('Error:', data.error);
-}
-
-
-
-                if (!response.ok) {
-                    throw new Error('Failed to summarize transcription');
+                const data = await response.json();
+                if (response.ok) {
+                    console.log('Summary:', data.summary);
+                    document.getElementById('summary').innerText = data.summary;
+                } else {
+                    console.error('Error:', data.error);
+                    alert('Error summarizing transcription');
                 }
-
-                const result = await response.json();
-                document.getElementById('summary').innerText = result.text;
             } catch (error) {
                 console.error('Error summarizing transcription:', error);
                 alert('Error summarizing transcription');
