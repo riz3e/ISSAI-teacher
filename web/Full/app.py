@@ -43,25 +43,21 @@ def transcribe():
 
 @app.route('/summarize', methods=['POST'])
 def summarize():
-    if not request.is_json:
-        return jsonify({'error': 'Request must be JSON'}), 400
+    text = request.form.get('text')
 
-    data = request.get_json()
-
-    if "text" not in data:
-        return jsonify({'error': 'Missing "text" field in request body'}), 400
-
-    text = data["text"]
-    print(f"text: {text}")
+    if not text:
+        return jsonify({'error': "Empty!"}), 400
 
     try:
-        summary = requests.post(SUMMARY_API_URL, data={'text': text})
-        print(f"summ: {summary}")
-
-        return jsonify({'summary': summary})
+        response = requests.post(SUMMARY_API_URL, data={'text': text})
+        response.raise_for_status()
+        summary = response.json().get('summary', '')  # Assuming the summary API returns JSON
+    except requests.RequestException as e:
+        return jsonify({'error': f'Error during request to Summary service: {str(e)}'}), 500
     except Exception as e:
-        print(f"Error summarizing text: {e}")
-        return jsonify({'error': 'Error during summarization'}), 500
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'summary': summary})
 
 
 @app.route('/generate_audio', methods=['POST'])

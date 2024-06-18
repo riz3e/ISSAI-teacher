@@ -177,12 +177,20 @@
 
             try {
                 const response = await fetch('/summarize', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ text: transcription })
-                });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text: transcription })
+});
+
+const data = await response.json();
+if (response.ok) {
+    console.log('Summary:', data.summary);
+} else {
+    console.error('Error:', data.error);
+}
+
 
                 if (!response.ok) {
                     throw new Error('Failed to summarize transcription');
