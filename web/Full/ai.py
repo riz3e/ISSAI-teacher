@@ -28,22 +28,24 @@ model = genai.GenerativeModel(
 )
 chat_session = model.start_chat(history=[])
 
-translation_mapping = {
-    'А': 'A', 'а': 'a', 'Ә': 'Ă', 'ә': 'ă', 'Б': 'B', 'б': 'b', 'В': 'V', 'в': 'v',
-    'Г': 'G', 'г': 'g', 'Ғ': 'Gh', 'ғ': 'gh', 'Д': 'D', 'д': 'd', 'Е': 'E', 'е': 'e',
-    'Ё': 'Ë', 'ё': 'ë', 'Ж': 'Zh', 'ж': 'zh', 'З': 'Z', 'з': 'z', 'И': 'I', 'и': 'i',
-    'Й': 'Y', 'й': 'y', 'К': 'K', 'к': 'k', 'Қ': 'Q', 'қ': 'q', 'Л': 'L', 'л': 'l',
-    'М': 'M', 'м': 'm', 'Н': 'N', 'н': 'n', 'Ң': 'N͡g', 'ң': 'n͡g', 'О': 'O', 'о': 'o',
-    'Ө': 'Ȯ', 'ө': 'ȯ', 'П': 'P', 'п': 'p', 'Р': 'R', 'р': 'r', 'С': 'S', 'с': 's',
-    'Т': 'T', 'т': 't', 'У': 'U', 'у': 'u', 'Ұ': 'Ū', 'ұ': 'ū', 'Ү': 'U̇', 'ү': 'u̇',
-    'Ф': 'F', 'ф': 'f', 'Х': 'Kh', 'х': 'kh', 'Һ': 'Ḣ', 'һ': 'ḣ', 'Ц': 'T͡s', 'ц': 't͡s',
-    'Ч': 'Ch', 'ч': 'ch', 'Ш': 'Sh', 'ш': 'sh', 'Щ': 'Shch', 'щ': 'shch', 'Ъ': 'ʺ', 'ъ': 'ʺ',
-    'Ы': 'Y', 'ы': 'y', 'І': 'Ī', 'і': 'ī', 'Ь': 'ʹ', 'ь': 'ʹ', 'Э': 'Ė', 'э': 'ė',
-    'Ю': 'I͡u', 'ю': 'i͡u', 'Я': 'I͡a', 'я': 'i͡a'
+kazakh_to_iso9 = {
+    'А': 'A', 'Ә': 'Á', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Ғ': 'Ǵ', 'Д': 'D',
+    'Е': 'E', 'Ё': 'Ë', 'Ж': 'Ž', 'З': 'Z', 'И': 'I', 'Й': 'J', 'К': 'K',
+    'Қ': 'Q', 'Л': 'L', 'М': 'M', 'Н': 'N', 'Ң': 'Ń', 'О': 'O', 'Ө': 'Ö',
+    'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ұ': 'Ú', 'Ү': 'Ü',
+    'Ф': 'F', 'Х': 'H', 'Һ': 'Ḩ', 'Ц': 'C', 'Ч': 'Č', 'Ш': 'Š', 'Щ': 'Ŝ',
+    'Ъ': 'ʺ', 'Ы': 'Y', 'І': 'Ì', 'Ь': 'ʹ', 'Э': 'È', 'Ю': 'Û', 'Я': 'Â',
+    'а': 'a', 'ә': 'á', 'б': 'b', 'в': 'v', 'г': 'g', 'ғ': 'ǵ', 'д': 'd',
+    'е': 'e', 'ё': 'ë', 'ж': 'ž', 'з': 'z', 'и': 'i', 'й': 'j', 'к': 'k',
+    'қ': 'q', 'л': 'l', 'м': 'm', 'н': 'n', 'ң': 'ń', 'о': 'o', 'ө': 'ö',
+    'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ұ': 'ú', 'ү': 'ü',
+    'ф': 'f', 'х': 'h', 'һ': 'ḩ', 'ц': 'c', 'ч': 'č', 'ш': 'š', 'щ': 'ŝ',
+    'ъ': 'ʺ', 'ы': 'y', 'і': 'ì', 'ь': 'ʹ', 'э': 'è', 'ю': 'û', 'я': 'â'
 }
 
-def translate_to_iso(text):
-    translated_text = ''.join(translation_mapping.get(char, char) for char in text)
+def translate_to_iso9(kazakh_text):
+    # Translate each character in the input text
+    translated_text = ''.join(kazakh_to_iso9.get(char, char) for char in kazakh_text)
     return translated_text
 
 def summarize_sync(text: str) -> str:
@@ -53,7 +55,7 @@ def summarize_sync(text: str) -> str:
         if not text:
             raise HTTPException(status_code=400, detail="No text provided for summarization")
 
-        translated_text = translate_to_iso(text)
+        translated_text = f"{translate_to_iso9(text)}. Answer like its a real human dialogue."
         logging.debug(f"Translated text: {translated_text}")
 
         response = chat_session.send_message(translated_text)
