@@ -41,3 +41,4 @@ web/Full/wav2vec2_processor/preprocessor_config.json
 web/Full/wav2vec2_processor/special_tokens_map.json
 web/Full/wav2vec2_processor/tokenizer_config.json
 web/Full/wav2vec2_processor/vocab.json
+logs
