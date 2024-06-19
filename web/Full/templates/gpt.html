@@ -94,10 +94,8 @@
 
                 const gptResult = await gptResponse.json();
                 const gptMessage = gptResult.response;
-                console.log("xyu");
-                console.log(gptMessage);
                 conversation_history.concat(gptResult.conversation_history);
-                addMessageToConversation("GPT", response);
+                addMessageToConversation("GPT", gptMessage);
 
                 // Generate audio response from GPT
                 const gptAudioBlob = await fetch("/generate_audio", {
