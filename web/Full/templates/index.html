@@ -7,20 +7,20 @@
 </head>
 <body>
     <h1>Audio Transcription</h1>
-    <form id="upload-form" enctype="multipart/form-data">
+    <form id="upload-form" enctype="multipart/form-data" onsubmit="handleFileUpload(event)">
         <label for="audio-file">Upload Audio File:</label>
         <input type="file" id="audio-file" name="audio-file" accept="audio/*" required>
         <button type="submit">Submit</button>
     </form>
     <div id="transcription"></div>
-    <button id="summarize-button">Summarize Transcription</button>
+    <button onclick="summarizeTranscription()">Summarize Transcription</button>
     <div id="summary"></div>
 
     <h2>Record Audio</h2>
     <label for="mic-select">Choose Microphone:</label>
     <select id="mic-select"></select>
-    <button id="record-button">Record</button>
-    <button id="stop-button" disabled>Stop</button>
+    <button id="record-button" onclick="startRecording()">Record</button>
+    <button id="stop-button" onclick="stopRecording()" disabled>Stop</button>
     <audio id="recorded-audio" controls></audio>
 
     <h1>Text to Speech</h1>
@@ -30,7 +30,7 @@
     <a id="download-link" download="audio.wav" style="display: none;"><button>Download Audio</button></a>
 
     <script>
-        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+        async function handleFileUpload(event) {
             event.preventDefault();
             const formData = new FormData();
             const fileField = document.querySelector('input[type="file"]');
@@ -52,7 +52,7 @@
                 console.error('Error transcribing audio:', error);
                 alert('Error transcribing audio');
             }
-        });
+        }
 
         async function generateAudio() {
             const text = document.getElementById('text-input').value;
@@ -110,8 +110,8 @@
         let mediaRecorder;
         let audioChunks = [];
 
-        document.getElementById('record-button').addEventListener('click', async () => {
-            const selectedMic = document.getElementById('mic-select').value; // Fixed typo
+        async function startRecording() {
+            const selectedMic = document.getElementById('mic-select').value;
             if (!selectedMic) {
                 alert('Please select a microphone first!');
                 return;
@@ -147,33 +147,30 @@
                 const result = await response.json();
                 document.getElementById('transcription').innerText = result.transcription;
 
-                 try {
-                         const gptResponse = await fetch('/chat', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ message: userMessage })
-                        });
-
+                try {
+                    const gptResponse = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: userMessage })
+                    });
+                } catch (error) {
+                    console.error('Error in GPT response:', error);
+                }
             };
 
             document.getElementById('record-button').disabled = true;
             document.getElementById('stop-button').disabled = false;
-        });
+        }
 
-        document.getElementById('stop-button').addEventListener('click', () => {
+        function stopRecording() {
             mediaRecorder.stop();
             document.getElementById('record-button').disabled = false;
             document.getElementById('stop-button').disabled = true;
-        });
+        }
 
-
-
-        // Populate the microphone list on page load
-        getMicrophones();
-
-        document.getElementById('summarize-button').addEventListener('click', async () => {
+        async function summarizeTranscription() {
             const transcription = document.getElementById('transcription').innerText;
             if (!transcription) {
                 alert('No transcription available to summarize');
@@ -201,8 +198,10 @@
                 console.error('Error summarizing transcription:', error);
                 alert('Error summarizing transcription');
             }
-        });
+        }
 
+        // Populate the microphone list on page load
+        getMicrophones();
     </script>
 </body>
 </html>
