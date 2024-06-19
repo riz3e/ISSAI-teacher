@@ -97,21 +97,22 @@
                 console.log("xyu");
                 console.log(gptMessage);
                 conversation_history.concat(gptResult.conversation_history);
-                addMessageToConversation("GPT", response);
+                addMessageToConversation("GPT", gptMessage);
 
+                const formData = new FormData();
+                formData.append("text", gptMessage);
                 // Generate audio response from GPT
                 const gptAudioBlob = await fetch("/generate_audio", {
                   method: "POST",
-                  body: JSON.stringify({ text: gptMessage }),
+                  body: FormData,
                 });
 
                 if (!gptAudioBlob.ok) {
                   throw new Error("Failed to generate audio");
                 }
 
-                const gptAudioBlobData = await gptAudioBlob.arrayBuffer();
-                const gptAudioBlobObj = new Blob([gptAudioBlobData]);
-                const gptAudioUrl = URL.createObjectURL(gptAudioBlobObj);
+                const gptAudioBlobData = await gptAudioBlob.blob();
+                const gptAudioUrl = URL.createObjectURL(gptAudioBlobData);
                 gptAudio.src = gptAudioUrl;
                 gptAudio.style.display = "block";
               } catch (error) {
