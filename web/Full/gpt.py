@@ -30,10 +30,6 @@ class ConversationRequest(BaseModel):
     user_input: str
     conversation_history: list
 
-
-
-
-
 app = FastAPI()
 
 client = create_openai_client()

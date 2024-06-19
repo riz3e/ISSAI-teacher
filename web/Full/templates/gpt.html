@@ -101,7 +101,10 @@
                 // Generate audio response from GPT
                 const gptAudioBlob = await fetch("/generate_audio", {
                   method: "POST",
-                  body: formData,
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ text: gptMessage }),
                 });
 
                 if (!gptAudioBlob.ok) {

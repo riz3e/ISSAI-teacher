@@ -93,22 +93,31 @@ def summarize():
 
     return jsonify({'summary': summary_text2})
 
-
 @app.route('/generate_audio', methods=['POST'])
 def generate_audio():
-    text = request.form['text']
-
     try:
+        data = request.json
+        print("text raw", data)
+
+        if data is None:
+            return jsonify({'error': 'No JSON data received'}), 400
+
+        text = data.get('text')
+
+        if text is None:
+            return jsonify({'error': 'No "text" field found in JSON data'}), 400
+
         # Forward the request to the text-to-speech microservice
         response = requests.post(TTS_SERVICE_URL, data={'text': text})
         response.raise_for_status()
         audio_data = response.content
+        
+        # Return the audio file as response
+        return send_file(io.BytesIO(audio_data), as_attachment=True, download_name='output.wav', mimetype='audio/wav')
+
     except requests.RequestException as e:
         return jsonify({'error': f'Error during request to TTS service: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-    return send_file(io.BytesIO(audio_data), as_attachment=True, download_name='output.wav', mimetype='audio/wav')
-
 if __name__ == '__main__':
     app.run(debug=True)

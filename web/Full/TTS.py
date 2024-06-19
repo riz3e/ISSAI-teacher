@@ -48,8 +48,8 @@ async def generate_audio(text: str = Form(...)):
             files={"file": ("output.wav", buffer, "audio/wav")},
         )
 
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Failed to send audio to server")
+        # if response.status_code != 200:
+        #     raise HTTPException(status_code=response.status_code, detail="Failed to send audio to server")
 
         # Return the streaming response
         buffer.seek(0)  # Reset buffer position to the beginning
