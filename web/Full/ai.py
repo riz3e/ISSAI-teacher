@@ -3,15 +3,18 @@ import google.generativeai as genai
 import logging
 import os
 from dotenv import load_dotenv
+from concurrent.futures import Executor, ThreadPoolExecutor
+import asyncio
 
 app = FastAPI()
 logging.basicConfig(level=logging.DEBUG)
+
+executor = ThreadPoolExecutor(max_workers=4)
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Create the model
-# See https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
@@ -22,14 +25,9 @@ generation_config = {
 model = genai.GenerativeModel(
   model_name="gemini-1.5-flash",
   generation_config=generation_config,
-  # safety_settings = Adjust safety settings
-  # See https://ai.google.dev/gemini-api/docs/safety-settings
 )
-chat_session = model.start_chat(
-  history=[
-  ]
-)
-# Define the translation mappings
+chat_session = model.start_chat(history=[])
+
 translation_mapping = {
     'А': 'A', 'а': 'a', 'Ә': 'Ă', 'ә': 'ă', 'Б': 'B', 'б': 'b', 'В': 'V', 'в': 'v',
     'Г': 'G', 'г': 'g', 'Ғ': 'Gh', 'ғ': 'gh', 'Д': 'D', 'д': 'd', 'Е': 'E', 'е': 'e',
@@ -45,22 +43,16 @@ translation_mapping = {
 }
 
 def translate_to_iso(text):
-    translated_text = ''
-    for char in text:
-        translated_text += translation_mapping.get(char, char)
+    translated_text = ''.join(translation_mapping.get(char, char) for char in text)
     return translated_text
 
-
-
-
-@app.post("/summarize")
-async def summarize(text: str = Form(...)):
+def summarize_sync(text: str) -> str:
     try:
         logging.debug(f"Received text: {text}")
-        
+
         if not text:
             raise HTTPException(status_code=400, detail="No text provided for summarization")
-        
+
         translated_text = translate_to_iso(text)
         logging.debug(f"Translated text: {translated_text}")
 
@@ -73,11 +65,22 @@ async def summarize(text: str = Form(...)):
         summary = response.text
         logging.debug(f"Summary: {summary}")
 
+        return summary
+
+    except Exception as e:
+        logging.error(f"Error during summarization: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error during summarization: {str(e)}")
+
+@app.post("/summarize")
+async def summarize(text: str = Form(...)):
+    try:
+        loop = asyncio.get_event_loop()
+        summary = await loop.run_in_executor(executor, summarize_sync, text)
         return {"summary": summary}
     
     except Exception as e:
         logging.error(f"Error during summarization: {str(e)}")
-        return {"error": f"Error during summarization: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Error during summarization: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
