@@ -13,7 +13,7 @@
         <button type="submit">Submit</button>
     </form>
     <div id="transcription"></div>
-    <button id="summarize-button" style="display: none;">Summarize Transcription</button>
+    <button id="summarize-button">Summarize Transcription</button>
     <div id="summary"></div>
 
     <h2>Record Audio</h2>
@@ -48,7 +48,6 @@
 
                 const result = await response.json();
                 document.getElementById('transcription').innerText = result.transcription;
-                document.getElementById('summarize-button').style.display = 'block';
             } catch (error) {
                 console.error('Error transcribing audio:', error);
                 alert('Error transcribing audio');
@@ -112,47 +111,46 @@
         let audioChunks = [];
 
         document.getElementById('record-button').addEventListener('click', async () => {
-    const selectedMic = document.getElementById('mic-select').value; // Fixed typo
-    if (!selectedMic) {
-        alert('Please select a microphone first!');
-        return;
-    }
-    
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
-    });
+            const selectedMic = document.getElementById('mic-select').value; // Fixed typo
+            if (!selectedMic) {
+                alert('Please select a microphone first!');
+                return;
+            }
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
+            });
 
-    mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.start();
-    audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            audioChunks = [];
 
-    mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-    };
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
 
-    mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = document.getElementById('recorded-audio');
-        audioElement.src = audioUrl;
-        audioElement.play();
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioElement = document.getElementById('recorded-audio');
+                audioElement.src = audioUrl;
+                audioElement.play();
 
-        const formData = new FormData();
-        formData.append('audio-file', audioBlob, 'recorded_audio.wav');
+                const formData = new FormData();
+                formData.append('audio-file', audioBlob, 'recorded_audio.wav');
 
-        const response = await fetch('/transcribe', {
-            method: 'POST',
-            body: formData
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                document.getElementById('transcription').innerText = result.transcription;
+            };
+
+            document.getElementById('record-button').disabled = true;
+            document.getElementById('stop-button').disabled = false;
         });
-
-        const result = await response.json();
-        document.getElementById('transcription').innerText = result.transcription;
-    };
-
-    document.getElementById('record-button').disabled = true;
-    document.getElementById('stop-button').disabled = false;
-});
-
 
         document.getElementById('stop-button').addEventListener('click', () => {
             mediaRecorder.stop();
@@ -160,7 +158,10 @@
             document.getElementById('stop-button').disabled = true;
         });
 
+       
+
         // Populate the microphone list on page load
+        getMicrophones();
 
         document.getElementById('summarize-button').addEventListener('click', async () => {
             const transcription = document.getElementById('transcription').innerText;
@@ -192,7 +193,6 @@
             }
         });
         
-        getMicrophones();
     </script>
 </body>
 </html>
