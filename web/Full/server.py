@@ -26,8 +26,8 @@ services = {
 }
 
 # Create a logs directory if it doesn't exist
-logs_dir = os.path.join(base_dir, "logs")
-os.makedirs(logs_dir, exist_ok=True)
+# logs_dir = os.path.join(base_dir, "logs")
+os.makedirs("logs", exist_ok=True)
 
 # List to keep track of the processes and log files
 processes = []
@@ -39,8 +39,8 @@ try:
         print(f"Starting {service}...")
 
         # Create log files for each service
-        stdout_log = open(f"{service}_stdout.log", "w")
-        stderr_log = open(f"{service}_stderr.log", "w")
+        stdout_log = open(f"logs/{service}_stdout.log", "w")
+        stderr_log = open(f"logs/{service}_stderr.log", "w")
 
         # Start the process and redirect stdout and stderr to log files
         process = subprocess.Popen(command, stdout=stdout_log, stderr=stderr_log)

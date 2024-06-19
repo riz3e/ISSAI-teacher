@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Interaction with GPT</title>
+  </head>
+  <body>
+    <h1>Voice Interaction with GPT</h1>
+
+    <div
+      id="conversation"
+      style="
+        height: 400px;
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+      "
+    ></div>
+
+    <button id="start-record-btn">Start Recording</button>
+    <button id="stop-record-btn" disabled>Stop Recording</button>
+    <audio id="recorded-audio" controls style="display: none"></audio>
+
+    <h2>GPT Response</h2>
+    <div id="gpt-response" style="margin-bottom: 20px"></div>
+    <button id="play-response-btn" disabled>Play Response</button>
+    <audio id="gpt-audio" controls style="display: none"></audio>
+
+    <script>
+      const conversationDiv = document.getElementById("conversation");
+      const gptResponseDiv = document.getElementById("gpt-response");
+      const recordedAudio = document.getElementById("recorded-audio");
+      const gptAudio = document.getElementById("gpt-audio");
+
+      let mediaRecorder;
+      let audioChunks = [];
+
+      document
+        .getElementById("start-record-btn")
+        .addEventListener("click", async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+              audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+              const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const conversation_history = [];
+              recordedAudio.src = audioUrl;
+              recordedAudio.style.display = "block";
+
+              const formData = new FormData();
+              formData.append("audio-file", audioBlob, "recorded_audio.wav");
+
+              try {
+                const response = await fetch("/transcribe", {
+                  method: "POST",
+                  body: formData,
+                });
+
+                if (!response.ok) {
+                  throw new Error("Failed to transcribe audio");
+                }
+
+                const result = await response.json();
+                const userMessage = result.transcription;
+                addMessageToConversation("You", userMessage);
+
+                // Send user message to GPT for response
+                const gptResponse = await fetch("/gpt", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    user_input: userMessage,
+                    conversation_history: conversation_history,
+                  }),
+                });
+
+                if (!gptResponse.ok) {
+                  throw new Error("Failed to get GPT response");
+                }
+
+                const gptResult = await gptResponse.json();
+                const gptMessage = gptResult.response;
+                console.log("xyu");
+                console.log(gptMessage);
+                conversation_history.concat(gptResult.conversation_history);
+                addMessageToConversation("GPT", response);
+
+                // Generate audio response from GPT
+                const gptAudioBlob = await fetch("/generate_audio", {
+                  method: "POST",
+                  body: JSON.stringify({ text: gptMessage }),
+                });
+
+                if (!gptAudioBlob.ok) {
+                  throw new Error("Failed to generate audio");
+                }
+
+                const gptAudioBlobData = await gptAudioBlob.arrayBuffer();
+                const gptAudioBlobObj = new Blob([gptAudioBlobData]);
+                const gptAudioUrl = URL.createObjectURL(gptAudioBlobObj);
+                gptAudio.src = gptAudioUrl;
+                gptAudio.style.display = "block";
+              } catch (error) {
+                console.error("Error:", error);
+                alert("Error processing audio");
+              }
+            };
+
+            document.getElementById("start-record-btn").disabled = true;
+            document.getElementById("stop-record-btn").disabled = false;
+          } catch (error) {
+            console.error("Error accessing microphone:", error);
+            alert("Error accessing microphone");
+          }
+        });
+
+      document
+        .getElementById("stop-record-btn")
+        .addEventListener("click", () => {
+          mediaRecorder.stop();
+          document.getElementById("start-record-btn").disabled = false;
+          document.getElementById("stop-record-btn").disabled = true;
+        });
+
+      function addMessageToConversation(sender, message) {
+        const messageDiv = document.createElement("div");
+        messageDiv.textContent = `${sender}: ${message}`;
+        conversationDiv.appendChild(messageDiv);
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
