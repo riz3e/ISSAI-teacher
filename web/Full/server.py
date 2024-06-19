@@ -11,6 +11,11 @@ base_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
 # Construct the path to the virtual environment's Python executable
 venv_destination = os.path.join(base_dir, "venv", "Scripts", "python.exe")
 
+
+# logs direction
+logs_dir = os.path.join(base_dir, "logs")
+os.makedirs(logs_dir, exist_ok=True)
+
 # Define the command to run each service
 services = {
     "app.py": [venv_destination, "app.py"],
@@ -18,6 +23,10 @@ services = {
     "STT.py": [venv_destination, "STT.py"],
     "ai.py": [venv_destination, "ai.py"]
 }
+
+# Create a logs directory if it doesn't exist
+logs_dir = os.path.join(base_dir, "logs")
+os.makedirs(logs_dir, exist_ok=True)
 
 # List to keep track of the processes and log files
 processes = []
@@ -43,6 +52,9 @@ try:
     # Keep the main script running while services are active
     while True:
         time.sleep(10)
+
+
+
 
 except KeyboardInterrupt:
     print("Stopping all services...")

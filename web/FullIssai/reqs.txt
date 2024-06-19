@@ -1,5 +1,0 @@
-flask
-vosk
-piper-python
-soundfile
-pydub
