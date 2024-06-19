@@ -13,7 +13,7 @@
         <button type="submit">Submit</button>
     </form>
     <div id="transcription"></div>
-    <button id="summarize-button" style="display: none;">Summarize Transcription</button>
+    <button id="summarize-button">Summarize Transcription</button>
     <div id="summary"></div>
 
     <h2>Record Audio</h2>
@@ -158,13 +158,7 @@
             document.getElementById('stop-button').disabled = true;
         });
 
-        // Observe transcription div for changes and toggle summarize button
-        const transcriptionObserver = new MutationObserver(() => {
-            const transcription = document.getElementById('transcription').innerText;
-            document.getElementById('summarize-button').style.display = transcription ? 'block' : 'none';
-        });
-
-        transcriptionObserver.observe(document.getElementById('transcription'), { childList: true, subtree: true });
+       
 
         // Populate the microphone list on page load
         getMicrophones();
