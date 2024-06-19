@@ -3,7 +3,13 @@ import time
 import os
 
 #change locally
-venv_destination = r"C:\Projs\ISSAI-teacher\venv\Scripts\python.exe"
+# Determine the base directory dynamically
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Navigate up to the project root directory
+base_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+
+# Construct the path to the virtual environment's Python executable
+venv_destination = os.path.join(base_dir, "venv", "Scripts", "python.exe")
 
 # Define the command to run each service
 services = {
