@@ -33,7 +33,7 @@
       const gptResponseDiv = document.getElementById("gpt-response");
       const recordedAudio = document.getElementById("recorded-audio");
       const gptAudio = document.getElementById("gpt-audio");
-
+      let conversation_history = [];
       let mediaRecorder;
       let audioChunks = [];
 
@@ -55,7 +55,7 @@
             mediaRecorder.onstop = async () => {
               const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
               const audioUrl = URL.createObjectURL(audioBlob);
-              const conversation_history = [];
+
               recordedAudio.src = audioUrl;
               recordedAudio.style.display = "block";
 
@@ -94,22 +94,22 @@
 
                 const gptResult = await gptResponse.json();
                 const gptMessage = gptResult.response;
-                conversation_history.concat(gptResult.conversation_history);
+                conversation_history = gptResult.conversation_history;
                 addMessageToConversation("GPT", gptMessage);
-
+                const AudioformData = new FormData();
+                AudioformData.append("text", gptMessage);
                 // Generate audio response from GPT
                 const gptAudioBlob = await fetch("/generate_audio", {
                   method: "POST",
-                  body: JSON.stringify({ text: gptMessage }),
+                  body: formData,
                 });
 
                 if (!gptAudioBlob.ok) {
                   throw new Error("Failed to generate audio");
                 }
 
-                const gptAudioBlobData = await gptAudioBlob.arrayBuffer();
-                const gptAudioBlobObj = new Blob([gptAudioBlobData]);
-                const gptAudioUrl = URL.createObjectURL(gptAudioBlobObj);
+                const gggggaudioBlob = await gptAudioBlob.blob();
+                const gptAudioUrl = URL.createObjectURL(gggggaudioBlob);
                 gptAudio.src = gptAudioUrl;
                 gptAudio.style.display = "block";
               } catch (error) {
