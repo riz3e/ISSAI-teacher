@@ -57,8 +57,10 @@
             recordedAudio.src = audioUrl;
             recordedAudio.style.display = "block";
 
+
             const formData = new FormData();
-            formData.append("audio-file", audioBlob, "recorded_audio.wav");
+            const fileField = document.querySelector('input[type="file"]');
+            formData.append('audio-file', fileField.files[0]);
 
             try {
               const response = await fetch("/transcribe", {
