@@ -11,10 +11,15 @@ app = Flask(__name__)
 TRANSCRIBE_SERVICE_URL = "http://localhost:5001/transcribe"
 TTS_SERVICE_URL = "http://localhost:5002/generate_audio"
 SUMMARY_API_URL = "http://localhost:5003/summarize"
+GPT_CHAT_URL = "http://localhost:5004/chat"
 
 @app.route('/')
 def index():
     return render_template('index.html')  # Render the HTML template
+
+@app.route('/conversation')
+def conversation():
+    return render_template('gpt.html')  # Render the HTML template
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
@@ -39,6 +44,29 @@ def transcribe():
         return jsonify({'error': str(e)}), 500
 
     return jsonify({'transcription': transcription})
+
+@app.route('/gpt', methods=['POST'])
+def gpt():
+    user_input = request.json.get('user_input')  # Assuming user_input is sent as JSON
+    conversation_history = request.json.get('conversation_history')
+    try:
+
+        response = requests.post(GPT_CHAT_URL, json={'user_input': user_input, 'conversation_history': conversation_history})
+        response.raise_for_status()
+        gpt_response = response.json().get('response')
+        conversation_history = response.json().get('conversation_history')
+    except requests.RequestException as e:
+        return jsonify({'error': f'Error during request to GPT service: {str(e)}'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'response': gpt_response,
+                    'conversation_history': conversation_history})
+
+
+# @app.route('/gpt/create_client', methods=['POST'])
+# def gpt():
+#     return jsonify({"message": "yes"})
 
 
 @app.route('/summarize', methods=['POST'])

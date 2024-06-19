@@ -116,8 +116,8 @@
                 alert('Please select a microphone first!');
                 return;
             }
-            
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined }
             });
 
@@ -146,6 +146,16 @@
 
                 const result = await response.json();
                 document.getElementById('transcription').innerText = result.transcription;
+
+                 try {
+                         const gptResponse = await fetch('/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ message: userMessage })
+                        });
+
             };
 
             document.getElementById('record-button').disabled = true;
@@ -158,7 +168,7 @@
             document.getElementById('stop-button').disabled = true;
         });
 
-       
+
 
         // Populate the microphone list on page load
         getMicrophones();
@@ -192,7 +202,7 @@
                 alert('Error summarizing transcription');
             }
         });
-        
+
     </script>
 </body>
 </html>

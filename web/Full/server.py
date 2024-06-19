@@ -21,7 +21,8 @@ services = {
     "app.py": [venv_destination, "app.py"],
     "TTS.py": [venv_destination, "TTS.py"],
     "STT.py": [venv_destination, "STT.py"],
-    "ai.py": [venv_destination, "ai.py"]
+    "ai.py": [venv_destination, "ai.py"],
+    "gpt.py": [venv_destination, "gpt.py"]
 }
 
 # Create a logs directory if it doesn't exist

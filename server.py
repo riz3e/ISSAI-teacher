@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 # from database import engine, Base
 # from routers import user as UserRouter
-from gpt import Router as ChatGPTRouter
+from web.Full.gpt import Router as ChatGPTRouter
 
 # Base.metadata.create_all(bind=engine)
 
