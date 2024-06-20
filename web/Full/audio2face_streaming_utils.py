@@ -1,4 +1,3 @@
-import sys
 import grpc
 import time
 import numpy as np
@@ -7,11 +6,14 @@ import soundfile
 import audio2face_pb2
 import audio2face_pb2_grpc
 
-
 def push_audio_track(url, audio_data, samplerate, instance_name):
     block_until_playback_is_finished = True  # Adjust as necessary
     try:
-        with grpc.insecure_channel(url) as channel:
+        options = [
+            ('grpc.max_send_message_length', 50 * 1024 * 1024),  # 50MB
+            ('grpc.max_receive_message_length', 50 * 1024 * 1024)  # 50MB
+        ]
+        with grpc.insecure_channel(url, options=options) as channel:
             stub = audio2face_pb2_grpc.Audio2FaceStub(channel)
             request = audio2face_pb2.PushAudioRequest(
                 audio_data=audio_data.astype(np.float32).tobytes(),
@@ -37,7 +39,11 @@ def push_audio_track_stream(url, audio_data, samplerate, instance_name):
     block_until_playback_is_finished = True  # Adjust as necessary
 
     try:
-        with grpc.insecure_channel(url) as channel:
+        options = [
+            ('grpc.max_send_message_length', 50 * 1024 * 1024),  # 50MB
+            ('grpc.max_receive_message_length', 50 * 1024 * 1024)  # 50MB
+        ]
+        with grpc.insecure_channel(url, options=options) as channel:
             print("Channel created")
             stub = audio2face_pb2_grpc.Audio2FaceStub(channel)
 
@@ -65,23 +71,3 @@ def push_audio_track_stream(url, audio_data, samplerate, instance_name):
         print(f"gRPC error: {e}")
     finally:
         print("Channel closed")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: python script.py <url> <audio_file> <samplerate> <instance_name>")
-        sys.exit(1)
-
-    url = sys.argv[1]
-    audio_file = sys.argv[2]
-    samplerate = int(sys.argv[3])
-    instance_name = sys.argv[4]
-
-    try:
-        audio_data, _ = soundfile.read(audio_file)
-        # Choose either push_audio_track or push_audio_track_stream based on your requirement
-        push_audio_track(url, audio_data, samplerate, instance_name)
-        # push_audio_track_stream(url, audio_data, samplerate, instance_name)
-    except Exception as e:
-        print(f"Error reading audio file or processing request: {e}")
-        sys.exit(1)
