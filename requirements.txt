@@ -1,4 +1,5 @@
 numpy==1.26.4
+protobuf==3.20.x
 openai
 python-dotenv
 fastapi
@@ -13,3 +14,5 @@ google
 grpcio
 requests
 pydantic
+pydub
+ffmpeg

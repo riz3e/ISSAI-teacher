@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 import asyncio
 import logging
+from convert_to_mp3 import convert_wav_to_mp3
 
 app = FastAPI()
 
@@ -34,29 +35,43 @@ def generate_audio_sync(text: str) -> io.BytesIO:
         return buffer
 
     except Exception as e:
+        logging.error(f"Error during audio generation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error during audio generation: {str(e)}")
 
 @app.post("/generate_audio")
-async def generate_audio(text: str = Form(...)):
+async def generate_audio(text: str = Form(...), format: str = Form("wav")):
     try:
         loop = asyncio.get_event_loop()
         buffer = await loop.run_in_executor(executor, generate_audio_sync, text)
 
+        # Convert to MP3 if requested
+        if format == "mp3":
+            buffer = await loop.run_in_executor(executor, convert_wav_to_mp3, buffer)
+            media_type = "audio/mpeg"
+            filename = "output.mp3"
+        else:
+            media_type = "audio/wav"
+            filename = "output.wav"
+
+        # Reset buffer position to the beginning
+        buffer.seek(0)
+
         # Send the audio to the second server
         response = requests.post(
-            "http://localhost:5004/a2f",
-            files={"file": ("output.wav", buffer, "audio/wav")},
+            "http://localhost:5005/receive_audio",
+            files={"file": (filename, buffer, media_type)},
         )
 
         if response.status_code != 200:
-            print("failed to send audio to a2f")
-        #     raise HTTPException(status_code=response.status_code, detail="Failed to send audio to server")
+            logging.error("Failed to send audio to server")
+            raise HTTPException(status_code=response.status_code, detail="Failed to send audio to server")
 
         # Return the streaming response
         buffer.seek(0)  # Reset buffer position to the beginning
-        return StreamingResponse(buffer, media_type="audio/wav", headers={"Content-Disposition": "attachment; filename=output.wav"})
+        return StreamingResponse(buffer, media_type=media_type, headers={"Content-Disposition": f"attachment; filename={filename}"})
 
     except Exception as e:
+        logging.error(f"Error during audio generation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error during audio generation: {str(e)}")
 
 if __name__ == "__main__":
