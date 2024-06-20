@@ -17,7 +17,8 @@ if platform.system() == "Windows":
         "TTS.py": [venv_destination, "TTS.py"],
         "STT.py": [venv_destination, "STT.py"],
         "ai.py": [venv_destination, "ai.py"],
-        "gpt.py": [venv_destination, "gpt.py"]
+        "gpt.py": [venv_destination, "gpt.py"],
+        "a2f.py": [venv_destination, "a2f.py"]
     }
 
 else:
@@ -28,7 +29,8 @@ else:
         "TTS.py": [venv_destination, "web/full/TTS.py"],
         "STT.py": [venv_destination, "web/full/STT.py"],
         "ai.py": [venv_destination, "web/full/ai.py"],
-        "gpt.py": [venv_destination, "web/full/gpt.py"]
+        "gpt.py": [venv_destination, "web/full/gpt.py"],
+        "a2f.py": [venv_destination, "web/full/a2f.py"]
     }
 
 
