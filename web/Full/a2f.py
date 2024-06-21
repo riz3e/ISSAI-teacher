@@ -1,11 +1,9 @@
-
 import shutil
 import soundfile as sf
-import torch
-import torchaudio
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from audio2face_streaming_utils import push_audio_track
+import librosa
 
 app = FastAPI()
 
@@ -22,13 +20,10 @@ async def receive_audio(file: UploadFile = File(...)):
 
         # Resample audio to 16000 Hz if necessary
         if sampling_rate != 16000:
-            resampler = torchaudio.transforms.Resample(orig_freq=sampling_rate, new_freq=16000)
-            speech_tensor = torch.tensor(speech_array, dtype=torch.float32).unsqueeze(0)
-            speech_array = resampler(speech_tensor).squeeze().numpy()
+            speech_array = resample_audio(speech_array, sampling_rate, 16000)
             sampling_rate = 16000
 
-        # Execute the command with the audio file path (optional)
-        # execute_command(file_location)
+        # Send the audio to audio2face
         audio2face(speech_array, sampling_rate)
 
         # Prepare the response
@@ -42,11 +37,13 @@ async def receive_audio(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during audio reception: {str(e)}")
 
-def audio2face(audio_buffer, sample_rate):
-    # HARDCODEEEEEE
+def resample_audio(audio, orig_freq, new_freq):
+    resampled_audio = librosa.resample(audio, orig_freq, new_freq)
+    return resampled_audio
 
-    a2f_url = '127.0.0.1:50051' # a2f url, default one
-    a2f_avatar_instance = '/World/audio2face/PlayerStreaming' # Streaming instance in a2f
+def audio2face(audio_buffer, sample_rate):
+    a2f_url = '127.0.0.1:50051'  # a2f URL, default one
+    a2f_avatar_instance = '/World/audio2face/PlayerStreaming'  # Streaming instance in a2f
 
     push_audio_track(a2f_url, audio_buffer, sample_rate, a2f_avatar_instance)
 

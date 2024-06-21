@@ -19,4 +19,4 @@ scipy
 requests
 pydantic
 pydub
-ffmpeg
+librosa
