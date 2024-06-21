@@ -44,7 +44,7 @@ async def generate_audio(text: str = Form(...)):
 
         # Send the audio to the second server
         response = requests.post(
-            "http://localhost:5004/a2f",
+            "http://localhost:5005/a2f",
             files={"file": ("output.wav", buffer, "audio/wav")},
         )
 

@@ -9,8 +9,8 @@ from audio2face_streaming_utils import push_audio_track
 
 app = FastAPI()
 
-@app.post("/receive_audio")
-async def receive_audio(file: UploadFile = File(...)):
+@app.post("/a2f")
+async def a2f(file: UploadFile = File(...)):
     try:
         # Create a temporary file to save the uploaded file
         file_location = f"received_{file.filename}"
@@ -52,4 +52,4 @@ def audio2face(audio_buffer, sample_rate):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5004)
+    uvicorn.run(app, host="0.0.0.0", port=5005)
