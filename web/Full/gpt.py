@@ -9,14 +9,12 @@ from logger import log
 load_dotenv()
 
 SECRET_KEY = "SMTN"
-GPT_MODEL = "gpt-4o"
-
+GPT_MODEL = "gpt-4"
 
 def create_openai_client():
     return OpenAI(
         api_key=os.getenv('OPENAI_API_KEY')
     )
-
 
 def get_gpt_response(conversation_history: list, client):
     response = client.chat.completions.create(
@@ -25,6 +23,16 @@ def get_gpt_response(conversation_history: list, client):
     )
     return response.to_dict()['choices'][0]['message']['content']
 
+def summarize_conversation(conversation_history: list, client):
+    summary_prompt = [
+        {"role": "system", "content": "Summarize the following conversation briefly."},
+        {"role": "user", "content": str(conversation_history)}
+    ]
+    response = client.chat.completions.create(
+        model=GPT_MODEL,
+        messages=summary_prompt
+    )
+    return response.to_dict()['choices'][0]['message']['content']
 
 class ConversationRequest(BaseModel):
     user_input: str
@@ -34,15 +42,17 @@ app = FastAPI()
 
 client = create_openai_client()
 
-
 @app.post("/chat")
-async def chat(
-    request: ConversationRequest,
-):
+async def chat(request: ConversationRequest):
     try:
         conversation_history = request.conversation_history
         log.info(f"User input: {request.user_input}")
 
+        # Summarize the conversation history
+        summarized_history = summarize_conversation(conversation_history, client)
+        log.info(f"Summarized conversation history: {summarized_history}")
+
+        # Append new user message to the conversation history
         conversation_history.append({"role": "user", "content": request.user_input})
 
         gpt_response = get_gpt_response(conversation_history, client=client)
@@ -56,11 +66,10 @@ async def chat(
         log.error(f"An error occurred in chat endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 def main():
     conversation_history = []
 
-    print("Start a conversation with GPT-3.5 (type 'exit' to stop):")
+    print("Start a conversation with GPT-4 (type 'exit' to stop):")
     try:
         client = create_openai_client()
 
@@ -71,16 +80,20 @@ def main():
                 print("Ending conversation.")
                 break
 
+            # Summarize the conversation history
+            summarized_history = summarize_conversation(conversation_history, client)
+            print(f"Summarized conversation history: {summarized_history}")
+
+            # Append new user message to the conversation history
             conversation_history.append({"role": "user", "content": user_input})
 
             gpt_response = get_gpt_response(conversation_history, client=client)
             conversation_history.append({"role": "assistant", "content": gpt_response})
 
-            print(f"GPT-3.5: {gpt_response}")
+            print(f"GPT-4: {gpt_response}")
     except Exception as e:
         log.error(f"An error occurred: {str(e)}")
         raise e
-
 
 if __name__ == "__main__":
     import uvicorn
