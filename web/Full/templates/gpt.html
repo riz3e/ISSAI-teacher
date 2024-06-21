@@ -49,76 +49,11 @@
 
     function handleUserChoice(choice) {
       if (choice === 1) {
-        var conversation_history = [{role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You should answer without You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: **Happiness Card**
-Modern people need not only wealth, but also healthcare and education system to be happy. According to the "Happiness Map" created by researchers from the University of Leicester, Denmark is the happiest country in the world. The research included the opinions of 80,000 people from 178 countries. The richest and smartest countries are among the happiest countries. Health care, poverty level and access to education all affect the level of happiness. Countries with small population and strong social unity showed high results. Asian countries showed low results.
-
-**Treasure of Tutankhamun**
-Tutankhamun is Nefertiti's son-in-law, pharaoh who ascended the throne at the age of 12 and died in his early twenties. In 1923, Howard Carter discovered Tutankhamun's tomb, which was cast entirely in gold. The treasure occupies 10 halls of the Egyptian Museum in Cairo. The treasure includes gold coffins, a sarcophagus carved from crystal quartzite, jewelry and other items. Tutankhamun's treasure is the only tomb among the tombs of Egyptian pharaohs that survived the looting.
-
-**The world, the New Year and us**
-Countries around the world celebrate the New Year at different times and traditions. In India, it is celebrated in October-November, in the hottest season in Myanmar, in Romania with folk songs, in Brazil with white clothes, in Holland with bread with raisins, in Hungary without poultry meat. Italians throw away junk and pay off their debts. The Japanese beat the gong and serve long noodles, rice cakes, and beans at the holiday table. It is believed that laughter will bring success in the New Year.
-
-**Forest**
-Forest is an integral part of human life. In Paris, there are 36,000 bacteria in 1 m³ of air, and less than 500 in the park. Deforestation leads to ecological disaster. Paper production is 3 billion per year. requires rootstock. Bangladesh's forest cover has decreased to 6%, and the forest area needs to be increased by 25%. Deforestation is prohibited in Australia. India is also planning for reforestation. Green color is the most effective color for the human eye, the forest emits oxygen and absorbs carbon dioxide.
-` }];
+        conversation_history = [{role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
       } else if (choice === 2) {
-        var conversation_history = [{ role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts: **Lake Balkhash**
-
-Lake Balkhash is located in the southeast, its length is 614 km, its width is 74 km. The Ile, Lepsi, Ayakoz, Bakanas, Karatal, and Moynty rivers flow into it. In recent years, the area of ​​the lake has decreased by 2000 square meters, its level has dropped to 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government should pay attention to it. Lake Balkhash is a national and natural treasure for Kazakhstan. (101 words)
-
-**Language is a precious treasure**
-
-Linguist Oliver Weidel Holmes says that every language is a sacred temple and language is the foundation of culture. Language is the main symbol of the people. Scientist Eduard Saniel explains that the work and dreams of thousands of generations lie in the language. The linguist Graf calls language the genealogy of a nation, while Emorson says language is a museum of history. Johan Van Gurt says that losing one's mother tongue is like losing one's history. (114 words)
-
-**Kazakh dance**
-
-"Kazakh waltz" is a Kazakh dance, first performed by Shara Zhienkulova, music by Latif Hamidi. There are two versions of the dance, the first one was performed by Shara Zhienkulova, and the second one was created for the group of girls. The art of dancing originated with Shara Zhienkulova and is widespread among today's youth. (88 words)
-
-**Apitherapy**
-
-The history of treatment with honey bee venom is 3500 years old. Hippocrates wrote about the importance of this method, Cleopatra also used it. Bee venom contains vitamins B2, B6, E, calcium, manganese, copper, iron, sodium. It is used in the treatment of abdominal diseases, thyroid gland, cancer, rheumatism, nervous diseases, hypertension. The medical name of bee venom is apitoxin, it is used naturally and as an ointment. Apitherapy is a method of treatment with bee venom, which has many healing properties. (156 words)
-
-**History of Numbers**
-
-Mathematics is based on the concepts of number, set, function and group. The concept of number was formed in very early times. It started with the counting of natural numbers, then came to the concept of fractional, negative, irrational, complex, hypercomplex numbers. The concept of number developed very slowly. Modern numerals originated in ancient India and spread through the books of Muhammad Khorezmi. Numbers are an important part of human history, where there are people there are numbers, you need to know them. (200 words)
-` }];
+        conversation_history = [{ role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
       } else if (choice === 3) {
-        var conversation_history = [{role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts:
-Benefits of bee milk
-
-Bee milk has many benefits. Its Latin name is "Apilak", and its Russian name is "matochnoe molochko". Bee milk contains many enzymes, nucleic and amino acids, vitamins, fat and trace elements. Bee milk is used in scientific medicine, in pharmaceuticals, in the preparation of the drug "Apilak" and in the production of perfumes.
-
-The substances contained in bee milk help to prolong human life, rejuvenate and improve health. For example, freshly extracted royal jelly helps to stop the spread of germs in the body. Royal jelly lowers high blood pressure, dilates blood vessels, slows heart disease, improves sleep and reduces stress. Studies have shown that bee milk lowers blood cholesterol levels and improves blood composition.
-
-Bee milk is also used for medical purposes in children with poor health. It is used in the form of a special therapeutic wax for premature or new-born babies. This treatment improves children's eating and weight gain. In addition, royal jelly is used in the treatment of aortic asthma, some skin diseases, anemia and rheumatism in the joints.
-
-When bee milk is given to elderly people, blood pressure is regulated, appetite increases, eyesight improves, and energy increases. Bee milk is also useful for people who are tired of mental and physical work, because it strengthens the body and increases strength. Doctors also recommend bee milk to astronauts and athletes. Bee milk also helps to quickly recover from weakness after surgery.
-
-Before using the medicine "Apilak" obtained from bee milk, it is necessary to rely on the advice of a doctor-pharmacist. (258 words)
-
-Import from Almaty
-
-The city of Almaty is associated with the apple fruit and is a symbol of the apple. Aport apple is recognized as the native fruit of Almaty region. In 1930, Academician N. Vavilov pointed out that the apple of Almaty is one of the centers of origin of cultivated plants. Oxford University scientists proved this opinion at the genetic level.
-
-The fate of Aport is closely related to the fate of the people living in Zhetysu region. It has been determined that the DNA composition of apples grown in Britain is the same as that of wild apples growing in the Almaty region. This indicates that the original homeland of the fruit is the wild gardens of the Tien Shan Mountains.
-
-The main factor that makes Aport apples especially large and tasty is the ecological condition and nature of Ile Alatau. The normal weight of the retriever is 500-600 grams. This fruit grows best when it grows between 850-1350 meters above sea level. If the apple orchards are located above or below this level, the quality of the aport will decrease. There is an opportunity to revive the aport again, because its decline is due to anthropological factors.
-
-Fertile soil is necessary for the formation of a real aport tree. According to the latest researches, aport is damaged by several types of viruses. Therefore, in order to recover the variety, it is necessary to produce a seedling free from the virus. Favorable environmental conditions and proper agrotechnical measures are necessary for the restoration of the aport. (254 words)
-
-Mediation
-
-On January 28, 2011, the Law "On Mediation" was adopted in the Republic of Kazakhstan. This law provides for the introduction of mediation institutions as an alternative method of dispute resolution in civil and criminal proceedings.
-
-Mediation is an alternative method of dispute resolution with the participation of a neutral third party, a mediator. It helps the parties to come to a mutual peace. Mediation is based on the principles of voluntariness, confidentiality, equality of the parties and neutrality of the mediator.
-
-Today, mediation is widely used in matters ranging from large businesses to divorce and property division. According to international statistics, 30-40 percent of all disagreements are resolved through mediation, and 85 percent of them have a satisfactory result. Moldova and Lithuania were among the first to use mediation to resolve criminal cases.
-
-Mediator activities in Kazakhstan are carried out both on a professional and non-professional basis. Persons with higher education and over 25 years of age can become professional mediators. Those who wish to become non-professional mediators must be at least 40 years old and must be of good standing in the public eye.
-
-The main difference between mediation and court proceedings is that in mediation there is no winning or losing party, but a mutually acceptable deal is made. The mediation procedure is before the courtand easy and fast. Mediation takes 30 days, and trials can last months or years. The goal of mediation is for the parties to come to a mutually beneficial solution.
-
-The mediation agreement is approved in court as a settlement agreement. In the case of minor and moderate crimes, settlement of the conflict through restitution and reconciliation to the injured party will stop criminal prosecution. (248 words)` }];
+        conversation_history = [{role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
       } else {
         console.error("Invalid choice:", choice);
         return;
