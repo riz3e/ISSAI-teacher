@@ -49,7 +49,7 @@
 
     function handleUserChoice(choice) {
       if (choice === 1) {
-        conversation_history.push({ system: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: **Happiness Card**
+        var conversation_history = [{role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You should answer without You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: **Happiness Card**
 Modern people need not only wealth, but also healthcare and education system to be happy. According to the "Happiness Map" created by researchers from the University of Leicester, Denmark is the happiest country in the world. The research included the opinions of 80,000 people from 178 countries. The richest and smartest countries are among the happiest countries. Health care, poverty level and access to education all affect the level of happiness. Countries with small population and strong social unity showed high results. Asian countries showed low results.
 
 **Treasure of Tutankhamun**
@@ -60,9 +60,9 @@ Countries around the world celebrate the New Year at different times and traditi
 
 **Forest**
 Forest is an integral part of human life. In Paris, there are 36,000 bacteria in 1 m³ of air, and less than 500 in the park. Deforestation leads to ecological disaster. Paper production is 3 billion per year. requires rootstock. Bangladesh's forest cover has decreased to 6%, and the forest area needs to be increased by 25%. Deforestation is prohibited in Australia. India is also planning for reforestation. Green color is the most effective color for the human eye, the forest emits oxygen and absorbs carbon dioxide.
-` });
+` }];
       } else if (choice === 2) {
-        conversation_history.push({ system: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts: **Lake Balkhash**
+        var conversation_history = [{ role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts: **Lake Balkhash**
 
 Lake Balkhash is located in the southeast, its length is 614 km, its width is 74 km. The Ile, Lepsi, Ayakoz, Bakanas, Karatal, and Moynty rivers flow into it. In recent years, the area of ​​the lake has decreased by 2000 square meters, its level has dropped to 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government should pay attention to it. Lake Balkhash is a national and natural treasure for Kazakhstan. (101 words)
 
@@ -81,9 +81,9 @@ The history of treatment with honey bee venom is 3500 years old. Hippocrates wro
 **History of Numbers**
 
 Mathematics is based on the concepts of number, set, function and group. The concept of number was formed in very early times. It started with the counting of natural numbers, then came to the concept of fractional, negative, irrational, complex, hypercomplex numbers. The concept of number developed very slowly. Modern numerals originated in ancient India and spread through the books of Muhammad Khorezmi. Numbers are an important part of human history, where there are people there are numbers, you need to know them. (200 words)
-` });
+` }];
       } else if (choice === 3) {
-        conversation_history.push({ system: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts:
+        var conversation_history = [{role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF THE CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE, ANSWER FUTHER QUESTIONS. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON The texts:
 Benefits of bee milk
 
 Bee milk has many benefits. Its Latin name is "Apilak", and its Russian name is "matochnoe molochko". Bee milk contains many enzymes, nucleic and amino acids, vitamins, fat and trace elements. Bee milk is used in scientific medicine, in pharmaceuticals, in the preparation of the drug "Apilak" and in the production of perfumes.
@@ -118,7 +118,7 @@ Mediator activities in Kazakhstan are carried out both on a professional and non
 
 The main difference between mediation and court proceedings is that in mediation there is no winning or losing party, but a mutually acceptable deal is made. The mediation procedure is before the courtand easy and fast. Mediation takes 30 days, and trials can last months or years. The goal of mediation is for the parties to come to a mutually beneficial solution.
 
-The mediation agreement is approved in court as a settlement agreement. In the case of minor and moderate crimes, settlement of the conflict through restitution and reconciliation to the injured party will stop criminal prosecution. (248 words)` });
+The mediation agreement is approved in court as a settlement agreement. In the case of minor and moderate crimes, settlement of the conflict through restitution and reconciliation to the injured party will stop criminal prosecution. (248 words)` }];
       } else {
         console.error("Invalid choice:", choice);
         return;

@@ -39,19 +39,13 @@ def generate_audio_sync(text: str) -> io.BytesIO:
         raise HTTPException(status_code=500, detail=f"Error during audio generation: {str(e)}")
 
 @app.post("/generate_audio")
-async def generate_audio(text: str = Form(...), format: str = Form("wav")):
+async def generate_audio(text: str = Form(...)):
     try:
         loop = asyncio.get_event_loop()
         buffer = await loop.run_in_executor(executor, generate_audio_sync, text)
 
-        # Convert to MP3 if requested
-        if format == "mp3":
-            buffer = await loop.run_in_executor(executor, convert_wav_to_mp3, buffer)
-            media_type = "audio/mpeg"
-            filename = "output.mp3"
-        else:
-            media_type = "audio/wav"
-            filename = "output.wav"
+        media_type = "audio/wav"
+        filename = "output.wav"
 
         # Reset buffer position to the beginning
         buffer.seek(0)
