@@ -1,3 +1,4 @@
+
 import shutil
 import soundfile as sf
 import torch
@@ -5,7 +6,6 @@ import torchaudio
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from audio2face_streaming_utils import push_audio_track
-import logging
 
 app = FastAPI()
 
@@ -28,6 +28,7 @@ async def receive_audio(file: UploadFile = File(...)):
             sampling_rate = 16000
 
         # Execute the command with the audio file path (optional)
+        # execute_command(file_location)
         audio2face(speech_array, sampling_rate)
 
         # Prepare the response
@@ -39,12 +40,13 @@ async def receive_audio(file: UploadFile = File(...)):
         return JSONResponse(content=response)
 
     except Exception as e:
-        logging.error(f"Error during audio reception: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error during audio reception: {str(e)}")
 
 def audio2face(audio_buffer, sample_rate):
-    a2f_url = '127.0.0.1:50051'  # a2f url, default one
-    a2f_avatar_instance = '/World/audio2face/PlayerStreaming'  # Streaming instance in a2f
+    # HARDCODEEEEEE
+
+    a2f_url = '127.0.0.1:50051' # a2f url, default one
+    a2f_avatar_instance = '/World/audio2face/PlayerStreaming' # Streaming instance in a2f
 
     push_audio_track(a2f_url, audio_buffer, sample_rate, a2f_avatar_instance)
 

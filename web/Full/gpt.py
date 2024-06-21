@@ -1,7 +1,8 @@
 import os
+
+import requests
 from dotenv import load_dotenv
 from fastapi import HTTPException, FastAPI
-from flask import jsonify
 from openai import OpenAI
 from pydantic import BaseModel
 from logger import log
@@ -34,23 +35,61 @@ app = FastAPI()
 
 client = create_openai_client()
 
+summarizerClient = create_openai_client()
+
+
+async def translateText(text: str, From: str, to: str) -> str:
+    # Define the URL and the parameters
+    url = "https://issai.nu.edu.kz/tilmash/"
+    params = {
+        'translate': 'true',
+        'from': From, #   'kaz_Cyrl'
+        'to': to,   #   'eng_Latn'
+        'text': text
+    }
+
+    try:
+        # Send the GET request
+        response = requests.get(url, params=params)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Return the response text
+            return response.text
+        else:
+            # Return an error message
+            return f"Error: Unable to translate text. Status code: {response.status_code}"
+    except requests.RequestException as e:
+        # Return an error message if there was an exception
+        return f"Error: An exception occurred - {e}"
+
+
+        # print("Failed to get a response. Status code:", response.status_code)
+
 
 @app.post("/chat")
 async def chat(
     request: ConversationRequest,
 ):
     try:
+
+
         conversation_history = request.conversation_history
+
+        user_input = await translateText(request.user_input, 'kaz_Cyrl', 'eng_Latn')
+
         log.info(f"User input: {request.user_input}")
 
-        conversation_history.append({"role": "user", "content": request.user_input})
+        conversation_history.append({"role": "user", "content": user_input})
 
         gpt_response = get_gpt_response(conversation_history, client=client)
         conversation_history.append({"role": "assistant", "content": gpt_response})
 
         log.info(f"GPT-4 response: {gpt_response}")
 
-        return {"response": gpt_response,
+        translated_response = await translateText(gpt_response, "eng_Latn", 'kaz_Cyrl')
+
+        return {"response": translated_response,
                 'conversation_history': conversation_history}
     except Exception as e:
         log.error(f"An error occurred in chat endpoint: {str(e)}")
