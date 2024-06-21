@@ -1,35 +1,34 @@
 import io
-import torch
-import scipy.io.wavfile
-from transformers import VitsModel, AutoTokenizer
+import numpy as np
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from concurrent.futures import ThreadPoolExecutor
 import requests
 import asyncio
 import logging
-from convert_to_mp3 import convert_wav_to_mp3
+import gpt
 
 app = FastAPI()
+client = gpt.client
 
-# Load the text-to-speech model and tokenizer
-tts_model = VitsModel.from_pretrained("facebook/mms-tts-kaz")
-tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-kaz")
 logging.basicConfig(level=logging.DEBUG)
 
 executor = ThreadPoolExecutor(max_workers=4)
 
 def generate_audio_sync(text: str) -> io.BytesIO:
     try:
-        inputs = tokenizer(text, return_tensors="pt")
+        response = client.audio.speech.create(
+            model="tts-1-hd",
+            voice="alloy",
+            input=text
+        )
 
-        with torch.no_grad():
-            output = tts_model(**inputs).waveform
-
-        # Prepare the audio file for download
-        sample_rate = tts_model.config.sampling_rate
         buffer = io.BytesIO()
-        scipy.io.wavfile.write(buffer, rate=sample_rate, data=output.squeeze().numpy())
+
+        # Write the response content to the buffer
+        for chunk in response.with_streaming_response().iter_bytes():
+            buffer.write(chunk)
+        
         buffer.seek(0)
 
         return buffer
@@ -44,8 +43,8 @@ async def generate_audio(text: str = Form(...)):
         loop = asyncio.get_event_loop()
         buffer = await loop.run_in_executor(executor, generate_audio_sync, text)
 
-        media_type = "audio/wav"
-        filename = "output.wav"
+        media_type = "audio/mp3"
+        filename = "output.mp3"
 
         # Reset buffer position to the beginning
         buffer.seek(0)
