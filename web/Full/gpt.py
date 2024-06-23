@@ -64,9 +64,6 @@ async def translateText(text: str, From: str, to: str) -> str:
         return f"Error: An exception occurred - {e}"
 
 
-        # print("Failed to get a response. Status code:", response.status_code)
-
-
 @app.post("/chat")
 async def chat(
     request: ConversationRequest,
@@ -96,29 +93,29 @@ async def chat(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def main():
-    conversation_history = []
-
-    print("Start a conversation with GPT-3.5 (type 'exit' to stop):")
-    try:
-        client = create_openai_client()
-
-        while True:
-            user_input = input("You: ")
-
-            if user_input.lower() == 'exit':
-                print("Ending conversation.")
-                break
-
-            conversation_history.append({"role": "user", "content": user_input})
-
-            gpt_response = get_gpt_response(conversation_history, client=client)
-            conversation_history.append({"role": "assistant", "content": gpt_response})
-
-            print(f"GPT-3.5: {gpt_response}")
-    except Exception as e:
-        log.error(f"An error occurred: {str(e)}")
-        raise e
+# def main():
+#     conversation_history = []
+#
+#     print("Start a conversation with GPT-3.5 (type 'exit' to stop):")
+#     try:
+#         client = create_openai_client()
+#
+#         while True:
+#             user_input = input("You: ")
+#
+#             if user_input.lower() == 'exit':
+#                 print("Ending conversation.")
+#                 break
+#
+#             conversation_history.append({"role": "user", "content": user_input})
+#
+#             gpt_response = get_gpt_response(conversation_history, client=client)
+#             conversation_history.append({"role": "assistant", "content": gpt_response})
+#
+#             print(f"GPT-3.5: {gpt_response}")
+#     except Exception as e:
+#         log.error(f"An error occurred: {str(e)}")
+#         raise e
 
 
 if __name__ == "__main__":

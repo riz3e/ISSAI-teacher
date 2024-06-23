@@ -1,172 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Voice Interaction with GPT</title>
-</head>
-<body>
-  <h1>Voice Interaction with GPT</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Interaction with GPT</title>
+    <!-- <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    /> -->
 
-  <div
-    id="conversation"
-    style="
-      height: 400px;
-      overflow-y: scroll;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 20px;
-    "
-  ></div>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.6/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div style="background-color: white">
+      .
+      <div style="margin-left: 5rem; margin-top: 5rem">
+        <h1>Voice Interaction with GPT</h1>
 
-  <label for="option-chooser">Choose an option:</label>
-  <select id="option-chooser" onchange="handleOptionChange()">
-    <option value="1">A level</option>
-    <option value="2">B level</option>
-    <option value="3">C level</option>
-  </select>
+        <div
+          id="conversation"
+          style="
+            height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+          "
+        ></div>
 
-  <button id="start-record-btn">Start Recording</button>
-  <button id="stop-record-btn" disabled>Stop Recording</button>
-  <audio id="recorded-audio" controls style="display: none"></audio>
+        <label for="option-choose">Choose an option:</label><br />
+        <div class="choose">
+          <select id="option-chooser" onchange="handleOptionChange()">
+            <option value="1">A level</option>
+            <option value="2">B level</option>
+            <option value="3">C level</option>
+          </select>
+        </div>
+        <div class="btn btn-sm">
+          <button id="start-record-btn">Start Recording</button>
+        </div>
+        <div class="btn btn-sm">
+          <button id="stop-record-btn" disabled>Stop Recording</button>
+        </div>
+        <audio id="recorded-audio" controls style="display: none"></audio>
 
-  <h2>GPT Response</h2>
-  <div id="gpt-response" style="margin-bottom: 20px"></div>
-  <button id="play-response-btn" disabled>Play Response</button>
-  <audio id="gpt-audio" controls style="display: none"></audio>
+        <h2>GPT Response</h2>
+        <div id="gpt-response" style="margin-bottom: 20px"></div>
+        <button id="play-response-btn" disabled>Play Response</button>
+        <audio id="gpt-audio" controls style="display: none"></audio>
 
-  <script>
-    const conversationDiv = document.getElementById("conversation");
-    const gptResponseDiv = document.getElementById("gpt-response");
-    const recordedAudio = document.getElementById("recorded-audio");
-    const gptAudio = document.getElementById("gpt-audio");
-    let conversation_history = [];
+        <script>
+          const conversationDiv = document.getElementById("conversation");
+          const gptResponseDiv = document.getElementById("gpt-response");
+          const recordedAudio = document.getElementById("recorded-audio");
+          const gptAudio = document.getElementById("gpt-audio");
+          let conversation_history = [];
 
-    function handleOptionChange() {
-      const selectedOption = document.getElementById("option-chooser").value;
-      handleUserChoice(parseInt(selectedOption));
-    }
+          let basePrompt =
+            'USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: ' +
+            `Lake Balkhash is located in the southeast, its length is 614 km and its width is 74 km. It is drained by the rivers Ile, Lepsi, Ayacoz, Bakanas, Karatal, Mointa. In recent years, the lake area has decreased by 2000 square meters, the level has fallen by 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government needs to pay attention. Lake Balkhash is a national and natural wealth for Kazakhstan. (101 words) **Language is a treasure** Linguist Oliver Weidel Holmes says that every language is a sacred temple, the basis of culture. Language is the foundation of culture. Scholar Edward Saurnik explains that thousands of generations have lost their language, and that the history of the people is equal to the history of the mother tongue. Professor Yohan Vanmor Grave explains that the language is the basis of the culture.`;
 
-    function handleUserChoice(choice) {
-      if (choice === 1) {
-        conversation_history = [{role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
-      } else if (choice === 2) {
-        conversation_history = [{ role: "system", content: `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
-      } else if (choice === 3) {
-        conversation_history = [{role: "system", content:`USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher...`}]; // Full content here
-      } else {
-        console.error("Invalid choice:", choice);
-        return;
-      }
-      addMessageToConversation("You", `Selected choice ${choice}`);
-    }
-
-    let mediaRecorder;
-    let audioChunks = [];
-
-    document
-      .getElementById("start-record-btn")
-      .addEventListener("click", async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          mediaRecorder = new MediaRecorder(stream);
-          mediaRecorder.start();
-          audioChunks = [];
-
-          mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-          };
-
-          mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-            const audioUrl = URL.createObjectURL(audioBlob);
-
-            recordedAudio.src = audioUrl;
-            recordedAudio.style.display = "block";
-
-            const formData = new FormData();
-            formData.append("audio-file", audioBlob, "recorded_audio.wav");
-
+          async function translate(inputText) {
             try {
-              const response = await fetch("/transcribe", {
-                method: "POST",
-                body: formData,
+              const response = await fetch("/translate", {
+                method: "POST", // Using POST method for sending JSON data
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: inputText }), // Correctly stringify the JSON data
               });
 
               if (!response.ok) {
-                throw new Error("Failed to transcribe audio");
+                throw new Error(`HTTP error! Status: ${response.status}`);
               }
 
-              const result = await response.json();
-              const userMessage = result.transcription;
-              addMessageToConversation("You", userMessage);
-
-              const gptResponse = await fetch("/gpt", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  user_input: userMessage,
-                  conversation_history: conversation_history,
-                }),
-              });
-
-              if (!gptResponse.ok) {
-                throw new Error("Failed to get GPT response");
-              }
-
-              const gptResult = await gptResponse.json();
-              const gptMessage = gptResult.response;
-              conversation_history = gptResult.conversation_history;
-              addMessageToConversation("GPT", gptMessage);
-
-              const gptAudioBlob = await fetch("/generate_audio", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ text: gptMessage }),
-              });
-
-              if (!gptAudioBlob.ok) {
-                throw new Error("Failed to generate audio");
-              }
-
-              const audioBlob = await gptAudioBlob.blob();
-              const gptAudioUrl = URL.createObjectURL(audioBlob);
-              gptAudio.src = gptAudioUrl;
-              gptAudio.style.display = "block";
+              const data = await response.json(); // Parsing JSON response
+              return data.translated_text; // Assuming the server returns { "translated_text": "translated text" }
             } catch (error) {
               console.error("Error:", error);
-              alert("Error processing audio");
+              throw error; // Propagate the error further
             }
-          };
+          }
 
-          document.getElementById("start-record-btn").disabled = true;
-          document.getElementById("stop-record-btn").disabled = false;
-        } catch (error) {
-          console.error("Error accessing microphone:", error);
-          alert("Error accessing microphone");
-        }
-      });
+          function handleUserChoice(choice) {
+            let text;
+            switch (choice) {
+              case "1":
+                text = `Lake Balkhash is located in the southeast, its length is 614 km and its width is 74 km. It is drained by the rivers Ile, Lepsi, Ayacoz, Bakanas, Karatal, Mointa. In recent years, the lake area has decreased by 2000 square meters, the level has fallen by 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government needs to pay attention. Lake Balkhash is a national and natural wealth for Kazakhstan. (101 words) **Language is a treasure** Linguist Oliver Weidel Holmes says that every language is a sacred temple, the basis of culture. Language is the foundation of culture. Scholar Edward Saurnik explains that thousands of generations have lost their language, and that the history of the people is equal to the history of the mother tongue. Professor Yohan Vanmor Grave explains that the language is the basis of the culture.`;
+                break;
+              case "2":
+                text = `The Happiness Map** Modern people need not only wealth to be happy, but also health and education. According to the Happiness Map, created by researchers at the University of Leicester, Denmark is the happiest country in the world. The study surveyed 80,000 people in 178 countries. The happiest countries include the richest and smartest. Health care, poverty, and access to education all affect happiness. Low-population, strong social cohesion countries performed best. Asian countries performed poorly. **Tutankhamun Treasures** Tutankhamun is the son-in-law of Nefertiti, a pharaoh who ascended the throne at age 12 and died before the age of twenty. In 1923, Howard Carter discovered Tutankhamun's burnt-out tomb in a gold jar. 10 treasures in the Cairo Egyptian Museum`;
+                break;
+              case "3":
+                text = `Benefits of bee milk Bee milk has many benefits. Its Latin name is "Apilax", and in Russian it is called "maternal milk". Bee milk contains many enzymes, nucleic and amino acids, vitamins, fats and trace minerals. Bee milk is used in scientific medicine, pharmaceuticals to prepare the drug "Apilax" and in the manufacture of perfumes. The substances in bee milk help to prolong life, youth and improve health. For example, freshly extracted milk helps to stop the spread of microbes in the body. Bee milk reduces high blood pressure, dilates blood vessels, slows heart disease, improves sleep and improves mood. Research shows that low levels of Arin in the blood and improve blood sugar content.`;
+                break;
+              default:
+                console.error("Invalid choice:", choice);
+                text = ""; // Handle default case, possibly return empty string or handle error condition
+                break;
+            }
+            return text; // Return the selected text
+          }
 
-    document
-      .getElementById("stop-record-btn")
-      .addEventListener("click", () => {
-        mediaRecorder.stop();
-        document.getElementById("start-record-btn").disabled = false;
-        document.getElementById("stop-record-btn").disabled = true;
-      });
+          function handleOptionChange() {
+            let selectedOption =
+              document.getElementById("option-chooser").value;
+            console.log(selectedOption);
+            console.log(typeof selectedOption);
+            const text = handleUserChoice(selectedOption);
+            console.log(text);
+            basePrompt =
+              'USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: ' +
+              text;
+            conversation_history = [
+              {
+                role: "system",
+                content: basePrompt,
+              },
+            ];
+          }
 
-    function addMessageToConversation(sender, message) {
-      const messageDiv = document.createElement("div");
-      messageDiv.textContent = `${sender}: ${message}`;
-      conversationDiv.appendChild(messageDiv);
-      conversationDiv.scrollTop = conversationDiv.scrollHeight;
-    }
-  </script>
-</body>
+          let mediaRecorder;
+          let audioChunks = [];
+
+          document
+            .getElementById("start-record-btn")
+            .addEventListener("click", async () => {
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                  audio: true,
+                });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                  audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                  const audioBlob = new Blob(audioChunks, {
+                    type: "audio/wav",
+                  });
+                  const audioUrl = URL.createObjectURL(audioBlob);
+
+                  recordedAudio.src = audioUrl;
+                  recordedAudio.style.display = "block";
+
+                  const formData = new FormData();
+                  formData.append(
+                    "audio-file",
+                    audioBlob,
+                    "recorded_audio.wav"
+                  );
+
+                  try {
+                    const response = await fetch("/transcribe", {
+                      method: "POST",
+                      body: formData,
+                    });
+
+                    if (!response.ok) {
+                      throw new Error("Failed to transcribe audio");
+                    }
+
+                    const result = await response.json();
+                    const userMessage = result.transcription;
+                    addMessageToConversation("You", userMessage);
+
+                    const gptResponse = await fetch("/gpt", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        user_input: userMessage,
+                        conversation_history: conversation_history,
+                      }),
+                    });
+
+                    if (!gptResponse.ok) {
+                      throw new Error("Failed to get GPT response");
+                    }
+
+                    const gptResult = await gptResponse.json();
+                    const gptMessage = gptResult.response;
+                    conversation_history = gptResult.conversation_history;
+                    addMessageToConversation("GPT", gptMessage);
+
+                    const gptAudioBlob = await fetch("/generate_audio", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ text: gptMessage }),
+                    });
+
+                    if (!gptAudioBlob.ok) {
+                      throw new Error("Failed to generate audio");
+                    }
+
+                    const audioBlob = await gptAudioBlob.blob();
+                    const gptAudioUrl = URL.createObjectURL(audioBlob);
+                    gptAudio.src = gptAudioUrl;
+                    gptAudio.style.display = "block";
+                  } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error processing audio");
+                  }
+                };
+
+                document.getElementById("start-record-btn").disabled = true;
+                document.getElementById("stop-record-btn").disabled = false;
+              } catch (error) {
+                console.error("Error accessing microphone:", error);
+                alert("Error accessing microphone");
+              }
+            });
+
+          document
+            .getElementById("stop-record-btn")
+            .addEventListener("click", () => {
+              mediaRecorder.stop();
+              document.getElementById("start-record-btn").disabled = false;
+              document.getElementById("stop-record-btn").disabled = true;
+            });
+
+          function addMessageToConversation(sender, message) {
+            const messageDiv = document.createElement("div");
+
+            if (sender === "You") {
+              messageDiv.className = "chat chat-end"; // Apply CSS classes
+              messageDiv.innerHTML = `
+      <div class="chat-header">
+        You
+      </div>
+      <div class="chat-bubble">${message}</div>
+    `;
+            } else {
+              messageDiv.className = "chat chat-start"; // Apply CSS classes
+              messageDiv.innerHTML = `
+      <div class="chat-header">
+        GPT
+      </div>
+      <div class="chat-bubble">${message}</div>
+    `;
+            }
+            // messageDiv.textContent = `${sender}: ${message}`;
+            conversationDiv.appendChild(messageDiv);
+            conversationDiv.scrollTop = conversationDiv.scrollHeight;
+          }
+        </script>
+      </div>
+    </div>
+  </body>
 </html>

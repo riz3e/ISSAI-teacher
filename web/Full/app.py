@@ -93,6 +93,46 @@ def summarize():
 
     return jsonify({'summary': summary_text2})
 
+async def translateText(text: str, From: str, to: str) -> str:
+    # Define the URL and the parameters
+    url = "https://issai.nu.edu.kz/tilmash/"
+    params = {
+        'translate': 'true',
+        'from': From, #   'kaz_Cyrl'
+        'to': to,   #   'eng_Latn'
+        'text': text
+    }
+
+    try:
+        # Send the GET request
+        response = requests.get(url, params=params)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Return the response text
+            return response.text
+        else:
+            # Return an error message
+            return f"Error: Unable to translate text. Status code: {response.status_code}"
+    except requests.RequestException as e:
+        # Return an error message if there was an exception
+        return f"Error: An exception occurred - {e}"
+
+@app.route('/translate', methods=['POST'])
+def translate_handler():
+    try:
+        data = request.get_json()
+        text = data.get('text')
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+        
+        translated_text = translate_text(text, 'kaz_Cyrl', 'eng_Latn')
+        
+        return jsonify({"translated_text": translated_text}), 200
+    
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
 @app.route('/generate_audio', methods=['POST'])
 def generate_audio():
     try:
