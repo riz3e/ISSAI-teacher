@@ -51,3 +51,16 @@ web/Full/wav2vec2_processor/special_tokens_map.json
 web/Full/wav2vec2_processor/tokenizer_config.json
 web/Full/wav2vec2_processor/vocab.json
 web/Full/received_output.wav
+wav2vec2_model/added_tokens.json
+wav2vec2_model/config.json
+wav2vec2_model/model.safetensors
+wav2vec2_model/preprocessor_config.json
+wav2vec2_model/special_tokens_map.json
+wav2vec2_model/tokenizer_config.json
+wav2vec2_model/vocab.json
+vits_model/added_tokens.json
+vits_model/config.json
+vits_model/model.safetensors
+vits_model/special_tokens_map.json
+vits_model/tokenizer_config.json
+vits_model/vocab.json

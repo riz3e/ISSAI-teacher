@@ -61,8 +61,10 @@
           const gptResponseDiv = document.getElementById("gpt-response");
           const recordedAudio = document.getElementById("recorded-audio");
           const gptAudio = document.getElementById("gpt-audio");
-
-          let basePrompt = `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. DONT USE IN ANSWERS SYMBOLS LIKE ' " \\n You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: Lake Balkhash is located in the southeast, its length is 614 km and its width is 74 km. It is drained by the rivers Ile, Lepsi, Ayacoz, Bakanas, Karatal, Mointa. In recent years, the lake area has decreased by 2000 square meters, the level has fallen by 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government needs to pay attention. Lake Balkhash is a national and natural wealth for Kazakhstan. (101 words) **Language is a treasure** Linguist Oliver Weidel Holmes says that every language is a sacred temple, the basis of culture. Language is the foundation of culture. Scholar Edward Saurnik explains that thousands of generations have lost their language, and that the history of the people is equal to the history of the mother tongue. Professor Yohan Vanmor Grave explains that the language is the basis of the culture.`;
+          let option_value = "1";
+          let basePrompt =
+            `USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. DONT USE IN ANSWERS SYMBOLS LIKE ' " \\n You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: ` +
+            handleUserChoice(option_value);
           let conversation_history = [
             {
               role: "system",
@@ -115,12 +117,11 @@
           function handleOptionChange() {
             let selectedOption =
               document.getElementById("option-chooser").value;
-            console.log(selectedOption);
-            console.log(typeof selectedOption);
+            option_value = document.getElementById("option-chooser").value;
             const text = handleUserChoice(selectedOption);
             console.log(text);
             basePrompt =
-              'USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: ' +
+              'USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. You do not know anything except the texts below. You must not answer offtopic questions like "Who\'s the president of the USA". Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WONT FORGET, ALSO YOU SHOULD WRITE THINGS THAT YOU SHOULD SAY ABOUT NEXT"}. START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THIS TEXTES AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU TELLED SOME INFORMATION YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TELLED. YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE 20, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON  The texts: ' +
               text;
             conversation_history = [
               {
@@ -184,7 +185,7 @@
                         "Content-Type": "application/json",
                       },
                       body: JSON.stringify({
-                        user_input: userMessage,
+                        user_input: userMessage + ".",
                         conversation_history: conversation_history,
                       }),
                     });
@@ -194,10 +195,17 @@
                     }
 
                     const gptResult = await gptResponse.json();
-                    const gptMessage = gptResult.response;
-                    conversation_history = gptResult.conversation_history;
-                    gptJson = addMessageToConversation("GPT", gptMessage);
+                    const gptMessage = JSON.parse(gptResult.response);
 
+                    conversation_history = gptResult.conversation_history;
+
+                    // console.log(resp_user);
+
+                    addMessageToConversation("GPT", gptMessage.resp_user);
+                    conversation_history = [
+                      conversation_history[0],
+                      { content: gptMessage.context, role: "system" },
+                    ];
                     const gptAudioBlob = await fetch("/generate_audio", {
                       method: "POST",
                       headers: {
@@ -242,19 +250,19 @@
             if (sender === "You") {
               messageDiv.className = "chat chat-end"; // Apply CSS classes
               messageDiv.innerHTML = `
-      <div class="chat-header">
-        You
-      </div>
-      <div class="chat-bubble">${message}</div>
-    `;
+            <div class="chat-header">
+              You
+            </div>
+            <div class="chat-bubble">${message}</div>
+          `;
             } else {
               messageDiv.className = "chat chat-start"; // Apply CSS classes
               messageDiv.innerHTML = `
-      <div class="chat-header">
-        GPT
-      </div>
-      <div class="chat-bubble">${message}</div>
-    `;
+            <div class="chat-header">
+              GPT
+            </div>
+            <div class="chat-bubble">${message}</div>
+          `;
             }
             // messageDiv.textContent = `${sender}: ${message}`;
             conversationDiv.appendChild(messageDiv);

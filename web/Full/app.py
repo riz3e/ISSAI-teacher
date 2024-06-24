@@ -126,7 +126,7 @@ def translate_handler():
         if not text:
             return jsonify({"error": "No text provided"}), 400
         
-        translated_text = translate_text(text, 'kaz_Cyrl', 'eng_Latn')
+        translated_text = translateText(text, 'kaz_Cyrl', 'eng_Latn')
         
         return jsonify({"translated_text": translated_text}), 200
     
