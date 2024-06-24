@@ -6,6 +6,7 @@ from fastapi import HTTPException, FastAPI
 from openai import OpenAI
 from pydantic import BaseModel
 from logger import log
+import json
 
 load_dotenv()
 
@@ -72,7 +73,7 @@ async def chat(
 
 
         conversation_history = request.conversation_history
-
+        
         user_input = await translateText(request.user_input, 'kaz_Cyrl', 'eng_Latn')
 
         log.info(f"User input: {request.user_input}")
@@ -80,13 +81,17 @@ async def chat(
         conversation_history.append({"role": "user", "content": user_input})
 
         gpt_response = get_gpt_response(conversation_history, client=client)
+        gpt_response_content = json.loads(gpt_response)
         conversation_history.append({"role": "assistant", "content": gpt_response})
 
         log.info(f"GPT-4 response: {gpt_response}")
 
-        translated_response = await translateText(gpt_response, "eng_Latn", 'kaz_Cyrl')
+        translated_resp_user = await translateText(gpt_response_content["resp_user"], "eng_Latn", 'kaz_Cyrl')
+        print("respuserss", gpt_response_content["resp_user"])
+        gpt_response_content["resp_user"] = translated_resp_user
 
-        return {"response": translated_response,
+        gpt_response = json.dumps(gpt_response_content)
+        return {"response": gpt_response,
                 'conversation_history': conversation_history}
     except Exception as e:
         log.error(f"An error occurred in chat endpoint: {str(e)}")

@@ -37,3 +37,17 @@ web/Full/utils/__pycache__/audio2face_streaming_utils.cpython-312.pyc
 !/web/Full/wav2vec2_model/config.json
 !/web/Full/vits_tokenizer/
 !/web/Full/vits_model/
+web/Full/vits_tokenizer/added_tokens.json
+web/Full/vits_tokenizer/special_tokens_map.json
+web/Full/vits_tokenizer/tokenizer_config.json
+web/Full/vits_tokenizer/vocab.json
+web/Full/vits_model/config.json
+web/Full/vits_model/model.safetensors
+web/Full/wav2vec2_model/config.json
+web/Full/wav2vec2_model/model.safetensors
+web/Full/wav2vec2_processor/added_tokens.json
+web/Full/wav2vec2_processor/preprocessor_config.json
+web/Full/wav2vec2_processor/special_tokens_map.json
+web/Full/wav2vec2_processor/tokenizer_config.json
+web/Full/wav2vec2_processor/vocab.json
+web/Full/received_output.wav
