@@ -1,19 +1,26 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import httpx
-import os
+from pathlib import Path
 
 app = FastAPI()
 
+class TranscriptionRequest(BaseModel):
+    string: str
+
 @app.post("/saved")
-async def send_file_to_transcribe():
-    file_path = "documents/recordings/recording.wav"  # ROFL CODE
+async def send_file_to_transcribe(request: TranscriptionRequest):
+    if request.string != "saved":
+        return {"detail": "File not sent"}
+    
+    file_path = Path(r"C:\Users\admin\Documents\recordings\recording.wav")  # Replace with the correct path
     
     # Check if the file exists
-    if not os.path.exists(file_path):
+    if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     
     # Read the file content
-    with open(file_path, "rb") as file:
+    with file_path.open("rb") as file:
         file_content = file.read()
     
     # Prepare the file for uploading
@@ -27,3 +34,7 @@ async def send_file_to_transcribe():
         raise HTTPException(status_code=response.status_code, detail="Failed to transcribe file")
     
     return {"detail": "File sent for transcription"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5003)
