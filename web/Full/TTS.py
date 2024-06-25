@@ -49,8 +49,8 @@ async def generate_audio(text: str = Form(...)):
         loop = asyncio.get_event_loop()
         buffer = await loop.run_in_executor(executor, generate_audio_sync, text)
 
-        media_type = "audio/mp3"
-        filename = f"output{str(uuid.uuid4())}.mp3"
+        media_type = "audio/wav"
+        filename = f"output{str(uuid.uuid4())}.wav"
 
         # Write the buffer to a local file
         local_file_path = fr"web\Full\uploads\{filename}"  # Replace with the desired local path
@@ -67,7 +67,7 @@ async def generate_audio(text: str = Form(...)):
             )
 
         if response.status_code != 200:
-            logging.error("Failed to send audio to server")
+            logging.error("Failed to send audio to server", filename, media_type)
             raise HTTPException(status_code=response.status_code, detail="Failed to send audio to server")
 
         # Return the streaming response

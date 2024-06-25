@@ -49,18 +49,26 @@ def sanitize_json_string(json_str):
 def get_gpt_response(user_input, conversation_history):
     try:
         response = requests.post(GPT_CHAT_URL, json={'user_input': user_input, 'conversation_history': conversation_history})
+
+        
+
         response.raise_for_status()
         gpt_result = response.json()
         sanitized_response = sanitize_json_string(gpt_result['response'])
         gpt_response = json.loads(sanitized_response)
+
+        conversation_history.append({
+            "role": "user",
+            "content": user_input
+        })
+        conversation_history.append({
+            "role": "assistant",
+            "content": gpt_result['response']
+        })
         
         # Update the conversation history
-        conversation_history = gpt_result['conversation_history']
-        conversation_history = [
-            conversation_history[0],  # Preserve the initial system message
-            conversation_history[-1],
-            {"role": "system", "content": gpt_response['context']}
-        ]
+        
+        
         
     except json.JSONDecodeError as e:
         logging.error(f"JSON decoding error: {e}")
@@ -68,6 +76,8 @@ def get_gpt_response(user_input, conversation_history):
     except Exception as e:
         logging.error(f"Error in GPT request: {e}")
         gpt_response = {"resp_user": "No response from GPT", "context": ""}  # Provide a default response in case of failure
+
+    print(json.dumps(conversation_history, indent=4, ensure_ascii=False))
 
     # Send the response text to the TTS server and get the audio response
     tts_audio = get_tts_audio(gpt_response['resp_user'])
@@ -87,7 +97,7 @@ def main():
     global recording
     
     # Initialize the Vosk model
-    vosk_model = Model(r"web\Full\utils\vosk\vosk-model-kz-0.15")  # Replace with the correct path to your Vosk model
+    vosk_model = Model(r"C:\Users\user2\Desktop\avatar\vosk\vosk-model-kz-0.15")  # Replace with the correct path to your Vosk model
     
     # Set the sampling rate and other audio parameters
     samplerate = 16000  # You can set it to the desired sampling rate
@@ -120,7 +130,7 @@ def main():
                     if vosk_output:
                         print(f"Recognized Text: {vosk_output}")
                         gpt_response = get_gpt_response(vosk_output, conversation_history)
-                        print(gpt_response)
+                        
 
                 else:
                     vosk_output = vosk_rec.PartialResult().split('"')[-2]

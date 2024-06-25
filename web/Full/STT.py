@@ -9,7 +9,7 @@ import os
 app = FastAPI()
 
 # Load the Vosk model
-model_path = r"web\Full\utils\vosk\vosk-model-kz-0.15"
+model_path = r"C:\Users\user2\Desktop\avatar\vosk\vosk-model-kz-0.15"
 vosk_model = Model(model_path)
 
 @app.post("/transcribe/")
