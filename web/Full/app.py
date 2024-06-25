@@ -1,5 +1,3 @@
-# Import necessary libraries
-import os
 from flask import Flask, request, jsonify, send_file, render_template
 import requests
 import io
