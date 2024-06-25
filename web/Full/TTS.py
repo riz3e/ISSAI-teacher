@@ -1,4 +1,5 @@
 import io
+import os
 import numpy as np
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import StreamingResponse
@@ -7,6 +8,8 @@ import requests
 import asyncio
 import logging
 import gpt
+import uuid
+import random
 
 app = FastAPI()
 client = gpt.client
@@ -19,14 +22,14 @@ def generate_audio_sync(text: str) -> io.BytesIO:
     try:
         response = client.audio.speech.create(
             model="tts-1-hd",
-            voice="alloy",
+            voice="onyx",
             input=text
         )
 
         buffer = io.BytesIO()
 
         # Write the response content to the buffer
-        for chunk in response.with_streaming_response().iter_bytes():
+        for chunk in response.iter_bytes():
             buffer.write(chunk)
         
         buffer.seek(0)
@@ -40,20 +43,28 @@ def generate_audio_sync(text: str) -> io.BytesIO:
 @app.post("/generate_audio")
 async def generate_audio(text: str = Form(...)):
     try:
+
+        if text == "No response from GPT":
+            raise HTTPException(status_code=500, detail=f"no resp from gpt")
         loop = asyncio.get_event_loop()
         buffer = await loop.run_in_executor(executor, generate_audio_sync, text)
 
         media_type = "audio/mp3"
-        filename = "output.mp3"
+        filename = f"output{str(uuid.uuid4())}.mp3"
 
-        # Reset buffer position to the beginning
-        buffer.seek(0)
+        # Write the buffer to a local file
+        local_file_path = fr"web\Full\uploads\{filename}"  # Replace with the desired local path
+        with open(local_file_path, "wb") as f:
+            f.write(buffer.getbuffer())
+
+        logging.info(f"File saved locally at {local_file_path}")
 
         # Send the audio to the second server
-        response = requests.post(
-            "http://localhost:5005/receive_audio",
-            files={"file": (filename, buffer, media_type)},
-        )
+        with open(local_file_path, "rb") as f:
+            response = requests.post(
+                "http://localhost:5005/receive_audio",
+                files={"file": (filename, f, media_type)},
+            )
 
         if response.status_code != 200:
             logging.error("Failed to send audio to server")

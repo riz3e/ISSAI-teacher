@@ -72,12 +72,12 @@ async def chat(request: ConversationRequest):
             gpt_response_content = json.loads(gpt_response_raw.replace('json','').replace('`', ''))
         except json.JSONDecodeError as e:
             log.error(f"JSON decoding error: {e}")
-            log.error(gpt_response_content)
+            log.error(gpt_response_raw)
             raise HTTPException(status_code=500, detail="Error decoding GPT response")
 
         log.info(f"GPT-4 response: {gpt_response_content}")
         conversation_history.append({"role": "assistant", "content": gpt_response_raw.replace('\"','')})
-        translated_resp_user = await translateText(gpt_response_content.get("resp_user", "").replace("'", '').replace('\\','').replace('"', ""), "eng_Latn", 'kaz_Cyrl')
+        translated_resp_user = await translateText(gpt_response_content.get("resp_user", ""), "eng_Latn", 'kaz_Cyrl')
         log.info(f"GPT-4 response translated: {translated_resp_user}")
         gpt_response_content["resp_user"] = translated_resp_user
 

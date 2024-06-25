@@ -4,12 +4,19 @@ import sounddevice as sd
 import keyboard  # Requires `pip install keyboard`
 from vosk import Model, KaldiRecognizer
 import requests
+import json
+import io
+import pyaudio
+import wave
+import logging
 
 q = queue.Queue()
 recording = False
 
 GPT_CHAT_URL = "http://127.0.0.1:5000/gpt"
+TTS_SERVER_URL = "http://127.0.0.1:5002/generate_audio"
 
+logging.basicConfig(level=logging.INFO)
 
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
@@ -24,7 +31,7 @@ conversation_history = [
     {
         "role": "system",
         "content": """
-        USE ONLY ENGLISH LANGUAGE. You are an avatar named Rakhat in the role of a teacher, you should inroduce yourself first to user. DON'T USE IN ANSWERS SYMBOLS LIKE \\n. 
+        USE ONLY ENGLISH LANGUAGE. You are an avatar named Rakhat in the role of a teacher. DON'T USE IN ANSWERS SYMBOLS LIKE ' \\n, ANY SYMBLOS THAT CAN DISRUPT PYTHON SCRIPT. 
         You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". 
         Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WON'T FORGET, ALSO YOU SHOULD TYPE THE THINGS YOU WOULD SAY ABOUT NEXT, IT IS ESSENTIAL"}. 
         START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THESE TEXTS AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU HAVE TOLD SOME INFORMATION, YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TOLD. 
@@ -38,47 +45,52 @@ conversation_history = [
     }
 ]
 
+def sanitize_json_string(json_str):
+    """Sanitize JSON string to remove invalid control characters."""
+    return ''.join(char for char in json_str if ord(char) >= 32)
 
 def get_gpt_response(user_input, conversation_history):
-    print("AAAAAAAAAAAAAAAAAAAA", conversation_history)
-    conversation_history.append({
-        "role": "user",
-        "content": user_input
-    })
-        
     try:
         response = requests.post(GPT_CHAT_URL, json={'user_input': user_input, 'conversation_history': conversation_history})
         response.raise_for_status()
-        gpt_response = response.json().get('response')
-        conversation_history = response.json().get('conversation_history')
+        gpt_result = response.json()
+        sanitized_response = sanitize_json_string(gpt_result['response'])
+        gpt_response = json.loads(sanitized_response)
+        
+        # Update the conversation history
+        conversation_history = gpt_result['conversation_history']
+        conversation_history = [
+            conversation_history[0],  # Preserve the initial system message
+            conversation_history[-1],
+            {"role": "system", "content": gpt_response['context']}
+        ]
+        
+    except json.JSONDecodeError as e:
+        logging.error(f"JSON decoding error: {e}")
+        gpt_response = {"resp_user": "No response from GPT due to a decoding error.", "context": ""}
     except Exception as e:
-        print("Error in GPT request: ", e)
+        logging.error(f"Error in GPT request: {e}")
+        gpt_response = {"resp_user": "No response from GPT", "context": ""}  # Provide a default response in case of failure
 
-    if gpt_response is None:
-        gpt_response = "No response from GPT"  # Provide a default response in case of failure
-    conversation_history.append({
-        "role": "assistant",
-        "content": gpt_response
-    })
-    # print(conversation_history)
-    return gpt_response
-    # conversation_history.append({
-    #     "role": "assistant",
-    #     "content": gpt_message
-    # })
-    
-    # gpt_response = json.loads(gpt_message)
-    
-    # return jsonify({
-    #     "response": gpt_message,
-    #     "conversation_history": conversation_history
-    # })
+    # Send the response text to the TTS server and get the audio response
+    tts_audio = get_tts_audio(gpt_response['resp_user'])
+
+    return gpt_response['resp_user']
+
+def get_tts_audio(text):
+    try:
+        response = requests.post(TTS_SERVER_URL, data={'text': text})
+        response.raise_for_status()
+        return response.content  # Assuming the response contains the audio content
+    except Exception as e:
+        print("Error in TTS request: ", e)
+        return None
 
 def main():
     global recording
     
     # Initialize the Vosk model
-    vosk_model = Model(r"web\Full\utils\vosk\vosk-model-kz-0.15")
+    vosk_model = Model(r"web\Full\utils\vosk\vosk-model-kz-0.15")  # Replace with the correct path to your Vosk model
     
     # Set the sampling rate and other audio parameters
     samplerate = 16000  # You can set it to the desired sampling rate
@@ -89,7 +101,7 @@ def main():
         recording = not recording
         print("Recording" if recording else "Stopped recording")
 
-    # Attach the space key to toggle recording
+    # Attach the numpad 9 key to toggle recording
     keyboard.on_press_key("num 9", lambda _: toggle_recording())
 
     with sd.RawInputStream(samplerate=samplerate, 
@@ -110,7 +122,8 @@ def main():
                     
                     if vosk_output:
                         print(f"Recognized Text: {vosk_output}")
-                        print(get_gpt_response(vosk_output, conversation_history))
+                        gpt_response = get_gpt_response(vosk_output, conversation_history)
+                        print(gpt_response)
 
                 else:
                     vosk_output = vosk_rec.PartialResult().split('"')[-2]
@@ -124,4 +137,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         sys.exit(0)
     except Exception as e:
-        sys.exit(type(e).__name__ + ": " + str(e))
+        print(f"Error: {type(e).__name__}: {e}")
+        sys.exit(1)
