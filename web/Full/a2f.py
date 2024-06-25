@@ -11,9 +11,9 @@ app = FastAPI()
 async def receive_audio(file: UploadFile = File(...)):
     try:
         # Create a temporary file to save the uploaded file
-        file_location = f"received_{file.filename}"
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            file_location = temp_file.name
+            shutil.copyfileobj(file.file, temp_file)
 
         # Load audio file using soundfile
         speech_array, sampling_rate = sf.read(file_location)
@@ -37,6 +37,13 @@ async def receive_audio(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during audio reception: {str(e)}")
 
+    finally:
+        # Ensure the temporary file is deleted
+        if file_location:
+            try:
+                os.remove(file_location)
+            except Exception as cleanup_error:
+                print(f"Error cleaning up file: {cleanup_error}")
 def resample_audio(audio, orig_freq, new_freq):
     resampled_audio = librosa.resample(audio, orig_freq, new_freq)
     return resampled_audio
