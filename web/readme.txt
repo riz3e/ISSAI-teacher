@@ -1,1 +1,0 @@
-prosto dlya testov po fastu

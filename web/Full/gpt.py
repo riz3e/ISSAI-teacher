@@ -92,31 +92,6 @@ async def chat(request: ConversationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def main():
-    conversation_history = []
-
-    print("Start a conversation with GPT-3.5 (type 'exit' to stop):")
-    try:
-        client = create_openai_client()
-
-        while True:
-            user_input = input("You: ")
-
-            if user_input.lower() == 'exit':
-                print("Ending conversation.")
-                break
-
-            conversation_history.append({"role": "user", "content": user_input})
-
-            gpt_response = get_gpt_response(conversation_history, client=client)
-            conversation_history.append({"role": "assistant", "content": gpt_response})
-
-            print(f"GPT-3.5: {gpt_response}")
-    except Exception as e:
-        log.error(f"An error occurred: {str(e)}")
-        raise e
-
-
 def main2():
     while(True):
         try:
@@ -128,8 +103,16 @@ def main2():
 
             conversation_history.append({"role": "user", "content": user_input})
 
-            gpt_response = get_gpt_response(conversation_history, client=client).split('json')[1].replace('`', '')
-            gpt_response_content = json.loads(gpt_response)
+            
+            gpt_response = get_gpt_response(conversation_history, client=client)
+            log.info(gpt_response)
+            # gpt_response = get_gpt_response(conversation_history, client=client).split('json')[1]
+            try:
+                gpt_response_content = json.loads(gpt_response)
+            except json.JSONDecodeError as e:
+                log.error(f"JSON decoding error: {e}")
+
+                raise HTTPException(status_code=500, detail="Error decoding GPT response")
             
 
             log.info(f"GPT-4 response: {gpt_response}")

@@ -64,3 +64,5 @@ vits_model/model.safetensors
 vits_model/special_tokens_map.json
 vits_model/tokenizer_config.json
 vits_model/vocab.json
+temp/recorded_audio.wav
+output.wav
