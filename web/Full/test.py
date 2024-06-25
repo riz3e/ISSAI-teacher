@@ -24,11 +24,12 @@ conversation_history = [
     {
         "role": "system",
         "content": """
-        USE ONLY ENGLISH LANGUAGE. You are an avatar in the role of a teacher. DON'T USE IN ANSWERS SYMBOLS LIKE \\n. 
+        USE ONLY ENGLISH LANGUAGE. You are an avatar named Rakhat in the role of a teacher, you should inroduce yourself first to user. DON'T USE IN ANSWERS SYMBOLS LIKE \\n. 
         You do not know anything except the texts below. You must not answer offtopic questions like "Who's the president of the USA". 
-        Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WON'T FORGET"}. 
+        Answer in teaching manner. Answer in JSON format like {"resp_user": "HERE YOU SHOULD PUT THE ANSWER TO USER", "context": "HERE YOU SHOULD PUT THE SUMMARY OF THE TEXTS AND SUMMARY OF CONVERSATION, SO YOU WON'T FORGET, ALSO YOU SHOULD TYPE THE THINGS YOU WOULD SAY ABOUT NEXT, IT IS ESSENTIAL"}. 
         START YOUR LECTURE STARTING FROM THIS MESSAGE. START RETELLING THESE TEXTS AND YOU SHOULD LEAD THE CONVERSATION, NOT THE USER. AFTER YOU HAVE TOLD SOME INFORMATION, YOU SHOULD ASK QUESTIONS BASED ON THE INFORMATION YOU JUST TOLD. 
         YOU ARE A TEACHER, HAVING A LECTURE ABOUT THESE TEXTS. USE WORDS INSTEAD OF NUMBERS, DO NOT TYPE NUMBERS LIKE TWENTY, USE WORDS. DO NOT ANSWER OUTSIDE OF JSON. 
+        AND DO NOT ADD ANY OTHER THING IN JSON FORMAT, ONLY "resp_user" and "context", not any kind of "questions"
         The texts: 
         Lake Balkhash is located in the southeast, its length is 614 km and its width is 74 km. It is drained by the rivers Ile, Lepsi, Ayacoz, Bakanas, Karatal, Mointa. In recent years, the lake area has decreased by 2000 square meters, the level has fallen by 3 meters, salinity has increased, and the number of fish has decreased. Lake Balkhash is very important for our country, the government needs to pay attention. Lake Balkhash is a national and natural wealth for Kazakhstan. (101 words) **Language is a treasure** Linguist Oliver Weidel Holmes says that every language is a sacred temple, the basis of culture. Language is the foundation of culture. Scholar Edward Saurnik explains that thousands of generations have lost their language, and that the history of the people is equal to the history of the mother tongue. Professor Yohan Vanmor Grave explains that the language is the basis of the culture.
         The Happiness Map** Modern people need not only wealth to be happy, but also health and education. According to the Happiness Map, created by researchers at the University of Leicester, Denmark is the happiest country in the world. The study surveyed 80,000 people in 178 countries. The happiest countries include the richest and smartest. Health care, poverty, and access to education all affect happiness. Low-population, strong social cohesion countries performed best. Asian countries performed poorly. **Tutankhamun Treasures** Tutankhamun is the son-in-law of Nefertiti, a pharaoh who ascended the throne at age 12 and died before the age of twenty. In 1923, Howard Carter discovered Tutankhamun's burnt-out tomb in a gold jar. 10 treasures in the Cairo Egyptian Museum
@@ -39,13 +40,12 @@ conversation_history = [
 
 
 def get_gpt_response(user_input, conversation_history):
+    print("AAAAAAAAAAAAAAAAAAAA", conversation_history)
     conversation_history.append({
         "role": "user",
         "content": user_input
     })
-    
-    gpt_response = None  # Initialize gpt_response to avoid UnboundLocalError
-    
+        
     try:
         response = requests.post(GPT_CHAT_URL, json={'user_input': user_input, 'conversation_history': conversation_history})
         response.raise_for_status()
@@ -56,7 +56,11 @@ def get_gpt_response(user_input, conversation_history):
 
     if gpt_response is None:
         gpt_response = "No response from GPT"  # Provide a default response in case of failure
-
+    conversation_history.append({
+        "role": "assistant",
+        "content": gpt_response
+    })
+    # print(conversation_history)
     return gpt_response
     # conversation_history.append({
     #     "role": "assistant",
@@ -86,7 +90,7 @@ def main():
         print("Recording" if recording else "Stopped recording")
 
     # Attach the space key to toggle recording
-    keyboard.on_press_key("space", lambda _: toggle_recording())
+    keyboard.on_press_key("num 9", lambda _: toggle_recording())
 
     with sd.RawInputStream(samplerate=samplerate, 
                            blocksize=8000, 
@@ -96,7 +100,7 @@ def main():
                            callback=callback):
         vosk_rec = KaldiRecognizer(vosk_model, samplerate)
 
-        print("Press the space key to start/stop recording.")
+        print("Press the numpad 9 key to start/stop recording.")
 
         while True:
             try:
@@ -106,7 +110,6 @@ def main():
                     
                     if vosk_output:
                         print(f"Recognized Text: {vosk_output}")
-                        inputGPT = { "answer": vosk_output}
                         print(get_gpt_response(vosk_output, conversation_history))
 
                 else:
