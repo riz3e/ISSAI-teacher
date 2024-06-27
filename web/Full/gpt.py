@@ -9,8 +9,7 @@ import json
 
 load_dotenv()
 
-SECRET_KEY = "SMTN"
-GPT_MODEL = "gpt-4"
+GPT_MODEL = "gpt-4o"
 
 def create_openai_client():
     return OpenAI(

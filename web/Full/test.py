@@ -97,7 +97,7 @@ def main():
     global recording
     
     # Initialize the Vosk model
-    vosk_model = Model(r"C:\Users\user2\Desktop\avatar\vosk\vosk-model-kz-0.15")  # Replace with the correct path to your Vosk model
+    vosk_model = Model(r"web/Full/utils/vosk/vosk_model_inners_here")  # Replace with the correct path to your Vosk model
     
     # Set the sampling rate and other audio parameters
     samplerate = 16000  # You can set it to the desired sampling rate
