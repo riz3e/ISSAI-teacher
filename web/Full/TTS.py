@@ -1,6 +1,4 @@
 import io
-import os
-import numpy as np
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from concurrent.futures import ThreadPoolExecutor
@@ -9,7 +7,6 @@ import asyncio
 import logging
 import gpt
 import uuid
-import random
 
 app = FastAPI()
 client = gpt.client

@@ -1,7 +1,6 @@
 import grpc
 import time
 import numpy as np
-import soundfile
 
 import audio2face_pb2
 import audio2face_pb2_grpc

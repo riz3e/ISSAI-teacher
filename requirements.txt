@@ -9,6 +9,7 @@ soupsieve==2.5
 openai
 python-dotenv
 fastapi
+uvicorn
 flask
 soundfile
 google-generativeai
@@ -19,4 +20,6 @@ scipy
 requests
 pydantic
 pydub
-librosa
+sounddevice
+vosk
+keyboard
